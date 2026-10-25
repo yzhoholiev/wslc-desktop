@@ -1,0 +1,95 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  test:
+    runs-on: windows-2025-vs2026
+    steps:
+      # GitVersion reads the version from the tags and the commits since, so it needs the whole history
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      # A newly published package advisory stays a visible warning, for Dependabot to fix, rather than failing an unchanged build
+      - run: dotnet build -c Release -p:Platform=x64 -warnaserror -warnnotaserror:NU1901,NU1902,NU1903,NU1904
+      - run: dotnet test -c Release -p:Platform=x64 --no-build
+      # dotnet format loads the projects in Debug, so the libraries they reference must be built in Debug too
+      - run: dotnet build -p:Platform=x64
+      - run: dotnet format whitespace WslcDesktop.slnx --verify-no-changes
+      - run: dotnet format style WslcDesktop.slnx --verify-no-changes
+
+  publish:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - runtime: win-x64
+            runner: windows-2025-vs2026
+          - runtime: win-arm64
+            runner: windows-11-vs2026-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Publish
+        shell: pwsh
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: |
+          ./publish.ps1 -Runtime $env:RUNTIME
+          Copy-Item "publish/$env:RUNTIME/WslcDesktop.exe" "WslcDesktop-$env:RUNTIME.exe"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: WslcDesktop-${{ matrix.runtime }}
+          path: WslcDesktop-${{ matrix.runtime }}.exe
+          if-no-files-found: error
+          overwrite: true
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: publish
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            LICENSE
+            THIRD-PARTY-NOTICES.txt
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - run: |
+          sha256sum WslcDesktop-*.exe > SHA256SUMS.txt
+          cp ../LICENSE LICENSE.txt
+          cp ../THIRD-PARTY-NOTICES.txt .
+        working-directory: dist
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

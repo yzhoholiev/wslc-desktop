@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Page
+    x:Class="WslcDesktop.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:WslcDesktop.Controls"
+    Background="Transparent">
+
+    <Page.Resources>
+        <Style x:Key="SettingRowStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="16,14" />
+        </Style>
+
+        <Style x:Key="SettingGroupStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
+            <Setter Property="Margin" Value="0,16,0,4" />
+        </Style>
+
+        <Style TargetType="ToggleSwitch" BasedOn="{StaticResource DefaultToggleSwitchStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="OnContent" Value="On" />
+            <Setter Property="OffContent" Value="Off" />
+        </Style>
+
+        <Style x:Key="SettingDescriptionStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Padding="32,24,32,96" Spacing="4">
+            <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,8" />
+
+            <TextBlock Text="Background mode" Style="{StaticResource SettingGroupStyle}" />
+
+            <controls:SettingRow
+                Title="Keep running in the notification area"
+                Description="Closing the window hides it; the tray icon menu reaches containers, cleanup, live updates and WSL actions. Choose Exit there to quit.">
+                <ToggleSwitch x:Name="KeepRunningSwitch" AutomationProperties.Name="Keep running in the notification area"
+                              IsOn="{x:Bind ViewModel.KeepRunningInTray, Mode=TwoWay}" />
+            </controls:SettingRow>
+
+            <controls:SettingRow Title="Start with Windows" Description="Starts hidden in the notification area when you sign in.">
+                <ToggleSwitch x:Name="StartWithWindowsSwitch" AutomationProperties.Name="Start with Windows"
+                              IsOn="{x:Bind ViewModel.IsStartWithWindowsEnabled}" Toggled="OnStartWithWindowsToggled" />
+            </controls:SettingRow>
+
+            <controls:SettingRow x:Name="StartRuntimeOnLaunchRow" Title="Start the container runtime with the app"
+                                 Description="{x:Bind ViewModel.StartRuntimeOnLaunchDescription}">
+                <ToggleSwitch x:Name="StartRuntimeOnLaunchSwitch" AutomationProperties.Name="Start the container runtime with the app"
+                              IsOn="{x:Bind ViewModel.StartRuntimeOnLaunch, Mode=TwoWay}" />
+            </controls:SettingRow>
+
+            <controls:SettingRow x:Name="StopRuntimeOnExitRow" Title="Stop the container runtime when exiting"
+                                 Description="{x:Bind ViewModel.StopRuntimeOnExitDescription}">
+                <ToggleSwitch x:Name="StopRuntimeOnExitSwitch" AutomationProperties.Name="Stop the container runtime when exiting"
+                              IsOn="{x:Bind ViewModel.StopRuntimeOnExit, Mode=TwoWay}" />
+            </controls:SettingRow>
+
+            <TextBlock Text="Appearance" Style="{StaticResource SettingGroupStyle}" />
+
+            <Border Style="{StaticResource SettingRowStyle}">
+                <StackPanel Spacing="8">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="Window background" />
+                        <TextBlock Text="The material behind the window's content." Style="{StaticResource SettingDescriptionStyle}" />
+                    </StackPanel>
+                    <RadioButtons x:Name="BackdropChoice" AutomationProperties.Name="Window background" SelectionChanged="OnBackdropChanged">
+                        <RadioButton Content="Acrylic: translucent, shows the desktop behind the window" Tag="Acrylic" />
+                        <RadioButton Content="Mica: tinted by the wallpaper, more opaque" Tag="Mica" />
+                        <RadioButton Content="Mica Alt: stronger wallpaper tint" Tag="MicaAlt" />
+                    </RadioButtons>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="About" Style="{StaticResource SettingGroupStyle}" />
+
+            <Border Style="{StaticResource SettingRowStyle}">
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock x:Name="VersionText" Text="{x:Bind ViewModel.VersionText}" IsTextSelectionEnabled="True" />
+                        <TextBlock x:Name="WslcPathText" Text="{x:Bind ViewModel.WslcPathText}" IsTextSelectionEnabled="True"
+                                   Style="{StaticResource SettingDescriptionStyle}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                        <HyperlinkButton
+                            Content="Licenses"
+                            ToolTipService.ToolTip="The MIT license of WSLC Desktop and the notices of the components it ships with"
+                            Click="OnOpenLicensesClick" />
+                        <HyperlinkButton
+                            Content="Open app data folder"
+                            ToolTipService.ToolTip="Settings and crash log"
+                            Click="OnOpenDataFolderClick" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>WslcDesktop.Interop</RootNamespace>
+    <!-- The library builds as AnyCPU, but SetWindowLongPtr and NOTIFYICONDATAW are declared per architecture; x64 and ARM64 share their
+         64-bit layout, and only x86, which the app does not ship for, differs -->
+    <CsWin32PlatformTarget>x64</CsWin32PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WslcDesktop.Core\WslcDesktop.Core.csproj" />
+  </ItemGroup>
+
+</Project>

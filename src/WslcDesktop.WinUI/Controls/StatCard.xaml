@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Button
+    x:Class="WslcDesktop.Controls.StatCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WslcDesktop.Controls"
+    Style="{StaticResource CardButtonStyle}">
+
+    <Grid ColumnSpacing="14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Width="40" Height="40" CornerRadius="8" VerticalAlignment="Top" Background="{x:Bind BadgeBackground, Mode=OneWay}">
+            <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" FontSize="18" Foreground="{x:Bind BadgeBrush, Mode=OneWay}" />
+        </Border>
+        <StackPanel Grid.Column="1" Spacing="2">
+            <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource CardTitleStyle}" />
+            <local:AnimatedNumber Value="{x:Bind Value, Mode=OneWay}" TextStyle="{StaticResource TitleTextBlockStyle}" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Style="{x:Bind DotStyle, Mode=OneWay}"
+                         Visibility="{x:Bind ShowDot, Mode=OneWay}" />
+                <TextBlock Grid.Column="1" Text="{x:Bind Detail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Button>

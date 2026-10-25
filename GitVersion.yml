@@ -1,0 +1,9 @@
+workflow: GitHubFlow/v1
+next-version: 1.0.0
+# Windows file versions have no pre-release part; the weight puts a release above its pre-releases
+assembly-file-versioning-format: '{Major}.{Minor}.{Patch}.{WeightedPreReleaseNumber}'
+# A null label accepts tags with any pre-release label, so a v1.2.3-rc.1 tag on main builds 1.2.3-rc.1; both are needed, as an unset one falls back to the workflow's
+label: null
+branches:
+  main:
+    label: null

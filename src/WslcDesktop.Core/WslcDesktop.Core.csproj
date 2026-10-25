@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WslcDesktop.Core.Tests" />
+    <InternalsVisibleTo Include="WslcDesktop.WinUI.Tests" />
+  </ItemGroup>
+
+</Project>

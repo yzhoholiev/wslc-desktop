@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\WslcDesktop.Core\WslcDesktop.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WslcDesktop.Infrastructure.Tests" />
+  </ItemGroup>
+
+</Project>

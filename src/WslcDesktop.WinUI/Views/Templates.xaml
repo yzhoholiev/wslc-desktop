@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ResourceDictionary
+    x:Class="WslcDesktop.Views.Templates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:WslcDesktop.Models">
+
+    <DataTemplate x:Key="KeyValueTemplate" x:DataType="models:KeyValueEntry">
+        <Grid ColumnSpacing="12" Padding="0,3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{x:Bind Key}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="1" Text="{x:Bind Value}" IsTextSelectionEnabled="True" TextTrimming="CharacterEllipsis" />
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

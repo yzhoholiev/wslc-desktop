@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<views:ResourceListPage
+    x:Class="WslcDesktop.Views.VolumesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:WslcDesktop.Views"
+    xmlns:controls="using:WslcDesktop.Controls"
+    xmlns:vm="using:WslcDesktop.ViewModels"
+    Background="Transparent">
+
+    <Page.Resources>
+        <DataTemplate x:Key="RowTemplate" x:DataType="vm:VolumeItem">
+            <controls:ClickableRow Height="56" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.6*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="2.4*" />
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="48" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" ToolTipService.ToolTip="{x:Bind Name}"
+                               AutomationProperties.Name="{x:Bind Name}" />
+                    <TextBlock Text="{x:Bind Kind}" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{x:Bind Driver}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock Grid.Column="2" Text="{x:Bind Mountpoint}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="12" />
+                <controls:UsageChip Grid.Column="3" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
+                <Button x:Name="RowActions" Grid.Column="4" Tag="{x:Bind}" Click="OnRemoveClick"
+                        Style="{StaticResource RowActionButtonStyle}" ToolTipService.ToolTip="Delete volume"
+                        AutomationProperties.Name="Delete volume">
+                    <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                </Button>
+            </controls:ClickableRow>
+        </DataTemplate>
+    </Page.Resources>
+
+    <views:ResourceListView List="{x:Bind ViewModel}" Title="Volumes" SearchPlaceholder="Search volumes" ErrorTitle="Could not list volumes"
+                            ItemTemplate="{StaticResource RowTemplate}">
+        <views:ResourceListView.Toolbar>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <DropDownButton AutomationProperties.Name="Prune">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                        <TextBlock Text="Prune" />
+                    </StackPanel>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <MenuFlyoutItem Text="Remove unused anonymous volumes" Click="OnPruneAnonymousClick" />
+                            <MenuFlyoutItem Text="Remove all unused volumes" Click="OnPruneAllClick" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Button Style="{StaticResource IconButtonStyle}" Command="{x:Bind ViewModel.RefreshCommand}" ToolTipService.ToolTip="Refresh"
+                        AutomationProperties.Name="Refresh">
+                    <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                </Button>
+            </StackPanel>
+        </views:ResourceListView.Toolbar>
+        <views:ResourceListView.ColumnHeaders>
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.6*" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="2.4*" />
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="48" />
+                </Grid.ColumnDefinitions>
+                <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
+                <controls:SortHeader Grid.Column="1" Text="DRIVER" Key="driver" Sort="{x:Bind ViewModel.Sort}" />
+                <controls:SortHeader Grid.Column="2" Text="MOUNTPOINT" Key="mountpoint" Sort="{x:Bind ViewModel.Sort}" />
+                <controls:SortHeader Grid.Column="3" Text="USAGE" Key="usage" Sort="{x:Bind ViewModel.Sort}" />
+            </Grid>
+        </views:ResourceListView.ColumnHeaders>
+    </views:ResourceListView>
+</views:ResourceListPage>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>WslcDesktop.Launcher</RootNamespace>
+    <AssemblyName>WslcDesktop</AssemblyName>
+    <AssemblyTitle>WSLC Desktop</AssemblyTitle>
+    <Product>WSLC Desktop</Product>
+    <ApplicationIcon>..\WslcDesktop.WinUI\Assets\AppIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Native AOT -->
+  <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Zipped publish output of the WinUI app, produced by publish.ps1 -->
+  <ItemGroup Condition="'$(PayloadPath)' != ''">
+    <EmbeddedResource Include="$(PayloadPath)" LogicalName="payload.zip" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PayloadVersion)' != ''">
+    <AssemblyMetadata Include="PayloadVersion" Value="$(PayloadVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<UserControl
+    x:Class="WslcDesktop.Controls.UsageChip"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:WslcDesktop.ViewModels"
+    VerticalAlignment="Center">
+
+    <Grid>
+        <Button Style="{StaticResource UsageChipStyle}" Click="OnButtonClick" ToolTipService.ToolTip="Show the containers"
+                Visibility="{x:Bind vm:Bindings.CollapsedWhen(IsUnused)}"
+                AutomationProperties.Name="{x:Bind vm:Labels.UsageLabel(ContainerCount), Mode=OneWay}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="{x:Bind vm:Labels.InUseLabel(ContainerCount), Mode=OneWay}" />
+                <FontIcon Glyph="&#xE70D;" FontSize="8" />
+            </StackPanel>
+        </Button>
+        <Border Style="{StaticResource ChipLabelStyle}" Visibility="{x:Bind IsUnused}">
+            <TextBlock Text="Unused" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Border>
+    </Grid>
+</UserControl>
