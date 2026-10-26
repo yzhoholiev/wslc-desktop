@@ -16,6 +16,10 @@
   <img src="https://img.shields.io/badge/.NET_10-Native_AOT-512BD4.svg" alt=".NET 10 Native AOT">
 </p>
 
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="The WSLC Desktop dashboard: container, image, volume and network counts, CPU and memory graphs of the container VM, and the busiest containers">
+</p>
+
 ## ✨ Features
 
 - **Dashboard.** Counts of containers, images, volumes and networks; live CPU and memory of the container VM with 3-minute graphs; container storage; VM uptime; the busiest containers; quick actions.
