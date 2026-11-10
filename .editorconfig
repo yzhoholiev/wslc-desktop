@@ -57,6 +57,7 @@ csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_pattern_matching = true:suggestion
 csharp_style_prefer_switch_expression = true:suggestion
 csharp_style_prefer_null_check_over_type_check = true:suggestion
+csharp_style_prefer_labeled_jump_statements = true:suggestion
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_collection_initializer = true:suggestion

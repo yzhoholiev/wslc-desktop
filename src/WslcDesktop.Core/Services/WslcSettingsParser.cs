@@ -57,7 +57,7 @@ public static partial class WslcSettingsParser
     /// </summary>
     private static Dictionary<string, string> ReadValues(string yaml)
     {
-        var values = new Dictionary<string, string>(StringComparer.Ordinal);
+        Dictionary<string, string> values = [with(StringComparer.Ordinal)];
         string? section = null;
         foreach (string rawLine in yaml.Split('\n'))
         {

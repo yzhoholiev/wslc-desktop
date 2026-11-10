@@ -5,36 +5,42 @@ namespace WslcDesktop.Controls;
 
 public static class ElementExtensions
 {
-    public static T TagOf<T>(this object sender) => (T)((FrameworkElement)sender).Tag;
-
-    /// <summary>
-    ///     Runs <paramref name="onUpdated" /> after each monitor update while the element is in the live tree.
-    /// </summary>
-    public static void FollowMonitor(this FrameworkElement element, RuntimeMonitor monitor, Action onUpdated)
+    extension(object sender)
     {
-        element.Loaded += (_, _) => monitor.Updated += onUpdated;
-        element.Unloaded += (_, _) => monitor.Updated -= onUpdated;
+        public T TagOf<T>() => (T)((FrameworkElement)sender).Tag;
     }
 
-    /// <summary>
-    ///     Completes once the element is in the live tree, so dialogs can use its XamlRoot.
-    /// </summary>
-    public static Task WhenLoadedAsync(this FrameworkElement element)
+    extension(FrameworkElement element)
     {
-        if (element.IsLoaded)
+        /// <summary>
+        ///     Runs <paramref name="onUpdated" /> after each monitor update while the element is in the live tree.
+        /// </summary>
+        public void FollowMonitor(RuntimeMonitor monitor, Action onUpdated)
         {
-            return Task.CompletedTask;
+            element.Loaded += (_, _) => monitor.Updated += onUpdated;
+            element.Unloaded += (_, _) => monitor.Updated -= onUpdated;
         }
 
-        var loaded = new TaskCompletionSource();
-
-        element.Loaded += OnLoaded;
-        return loaded.Task;
-
-        void OnLoaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        ///     Completes once the element is in the live tree, so dialogs can use its XamlRoot.
+        /// </summary>
+        public Task WhenLoadedAsync()
         {
-            element.Loaded -= OnLoaded;
-            loaded.SetResult();
+            if (element.IsLoaded)
+            {
+                return Task.CompletedTask;
+            }
+
+            var loaded = new TaskCompletionSource();
+
+            element.Loaded += OnLoaded;
+            return loaded.Task;
+
+            void OnLoaded(object sender, RoutedEventArgs e)
+            {
+                element.Loaded -= OnLoaded;
+                loaded.SetResult();
+            }
         }
     }
 }

@@ -54,11 +54,5 @@ public sealed partial class ClickableRow : Grid
         UpdateActions();
     }
 
-    private void UpdateActions()
-    {
-        if (_actions is not null)
-        {
-            _actions.Opacity = _isHovered || _hasFocus ? 1 : 0;
-        }
-    }
+    private void UpdateActions() => _actions?.Opacity = _isHovered || _hasFocus ? 1 : 0;
 }

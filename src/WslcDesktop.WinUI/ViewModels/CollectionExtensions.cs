@@ -5,65 +5,68 @@ namespace WslcDesktop.ViewModels;
 public static class CollectionExtensions
 {
     /// <summary>
-    ///     Brings the collection in line with <paramref name="source" /> without removing and re-adding a row whose item only changed or
-    ///     moved, which a list shows as the row disappearing.
+    ///     Updates to a collection a list shows.
     /// </summary>
     /// <param name="target">The collection a list shows.</param>
-    /// <param name="source">The items in the order to show them.</param>
-    /// <param name="keyOf">The identity of an item that survives a change to its values.</param>
-    public static void SyncTo<T, TKey>(this ObservableCollection<T> target, ReadOnlySpan<T> source, Func<T, TKey> keyOf)
+    extension<T>(ObservableCollection<T> target)
     {
-        EqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
-        for (int i = 0; i < source.Length; i++)
+        /// <summary>
+        ///     Brings the collection in line with <paramref name="source" /> without removing and re-adding a row whose item only changed or
+        ///     moved, which a list shows as the row disappearing.
+        /// </summary>
+        /// <param name="source">The items in the order to show them.</param>
+        /// <param name="keyOf">The identity of an item that survives a change to its values.</param>
+        public void SyncTo<TKey>(ReadOnlySpan<T> source, Func<T, TKey> keyOf)
         {
-            TKey key = keyOf(source[i]);
-            int current = -1;
-            for (int j = i; j < target.Count; j++)
+            EqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
+        nextItem:
+            for (int i = 0; i < source.Length; i++)
             {
-                if (comparer.Equals(keyOf(target[j]), key))
+                TKey key = keyOf(source[i]);
+                for (int j = i; j < target.Count; j++)
                 {
-                    current = j;
-                    break;
+                    if (!comparer.Equals(keyOf(target[j]), key))
+                    {
+                        continue;
+                    }
+
+                    if (j != i)
+                    {
+                        target.Move(j, i);
+                    }
+
+                    if (!EqualityComparer<T>.Default.Equals(target[i], source[i]))
+                    {
+                        target[i] = source[i];
+                    }
+
+                    continue nextItem;
                 }
-            }
 
-            if (current < 0)
-            {
                 target.Insert(i, source[i]);
-                continue;
             }
 
-            if (current != i)
+            while (target.Count > source.Length)
             {
-                target.Move(current, i);
+                target.RemoveAt(target.Count - 1);
             }
+        }
 
-            if (!EqualityComparer<T>.Default.Equals(target[i], source[i]))
+        /// <summary>
+        ///     Replaces the contents only when they differ, so an unchanged list does not re-render.
+        /// </summary>
+        public void ReplaceWith(IReadOnlyList<T> items)
+        {
+            if (items.SequenceEqual(target))
             {
-                target[i] = source[i];
+                return;
             }
-        }
 
-        while (target.Count > source.Length)
-        {
-            target.RemoveAt(target.Count - 1);
-        }
-    }
-
-    /// <summary>
-    ///     Replaces the contents only when they differ, so an unchanged list does not re-render.
-    /// </summary>
-    public static void ReplaceWith<T>(this ObservableCollection<T> target, IReadOnlyList<T> items)
-    {
-        if (items.SequenceEqual(target))
-        {
-            return;
-        }
-
-        target.Clear();
-        foreach (T item in items)
-        {
-            target.Add(item);
+            target.Clear();
+            foreach (T item in items)
+            {
+                target.Add(item);
+            }
         }
     }
 }

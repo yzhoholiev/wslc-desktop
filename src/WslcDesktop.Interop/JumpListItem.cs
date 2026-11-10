@@ -7,7 +7,7 @@ namespace WslcDesktop.Interop;
 /// <summary>
 ///     An entry in the jump list's Tasks section.
 /// </summary>
-public abstract unsafe record JumpListItem
+public closed unsafe record JumpListItem
 {
     /// <summary>
     ///     Creates the shell link that shows this entry in the jump list; the caller releases it.
