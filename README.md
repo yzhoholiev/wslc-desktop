@@ -102,7 +102,7 @@ Every push to `main` and every pull request builds, runs the unit tests and chec
 ## 🩺 Troubleshooting
 
 - **"wslc is not installed".** `wslc.exe` ships with WSL 2.9.3 and later. Choose **Update WSL** on the dashboard or run `wsl --update`; the app finds it without a restart.
-- **The containers are missing when run as administrator.** wslc gives elevated and normal processes separate sessions, each with its own VM and containers. An elevated WSLC Desktop shows **Administrator** in the title bar and works with the elevated session.
+- **The containers are missing when run as administrator.** wslc gives elevated and normal processes separate sessions, each with its own VM and containers. The **User | Administrator** switch in the title bar shows which session the window works with and whether each one is running; click the other side to reopen the app there (Administrator asks for permission).
 - **Settings and logs.** Settings live in `%LOCALAPPDATA%\WslcDesktop\settings.json`, and unhandled exceptions are appended to `crash.log` in the same folder. **Settings → Open app data folder** opens it. A settings file that cannot be read is kept as `settings.json.bak` before the app replaces it with defaults.
 - **Reporting a problem.** Open an [issue](https://github.com/yzhoholiev/wslc-desktop/issues) with your Windows and WSL versions (the **WSL** page lists them) and, for a crash, the end of `crash.log`. Report security problems as described in [SECURITY.md](SECURITY.md).
 

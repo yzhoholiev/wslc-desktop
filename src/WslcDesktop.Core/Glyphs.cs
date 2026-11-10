@@ -24,6 +24,7 @@ public static class Glyphs
     public const string Search = "\uE721";
     public const string Settings = "\uE713";
     public const string Shell = "\uE756";
+    public const string Shield = "\uEA18";
     public const string Shutdown = "\uE7E8";
     public const string SortAscending = "\uE70E";
     public const string SortDescending = "\uE70D";

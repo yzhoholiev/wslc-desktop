@@ -1,7 +1,7 @@
 namespace WslcDesktop.Controls;
 
 /// <summary>
-///     One entry of the tray menu; DotColor is a 0xRRGGBB status dot shown as its icon.
+///     One entry of the tray menu; DotColor is a 0xRRGGBB status color, shown as a dot or, with a Glyph, as the glyph's color.
 /// </summary>
 public sealed record TrayMenuItem(
     string Text,

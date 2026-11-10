@@ -148,12 +148,15 @@ internal sealed class TrayMenuHost
 
     private static IconElement? CreateIcon(TrayMenuItem item) => item switch
     {
+        { Glyph: { } glyph, DotColor: { } rgb } => new FontIcon { Glyph = glyph, Foreground = Brush(rgb) },
         { DotColor: { } rgb } => new PathIcon
         {
             Data = new EllipseGeometry { Center = new Point(8, 8), RadiusX = 5, RadiusY = 5 },
-            Foreground = new SolidColorBrush(ColorHelper.FromArgb(0xFF, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb))
+            Foreground = Brush(rgb)
         },
         { Glyph: { } glyph } => new FontIcon { Glyph = glyph },
         _ => null
     };
+
+    private static SolidColorBrush Brush(uint rgb) => new(ColorHelper.FromArgb(0xFF, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb));
 }

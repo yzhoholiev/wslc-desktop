@@ -68,6 +68,40 @@
             </Style>
 
             <!-- Colors picked in code as styles: a brush read from resources keeps its theme, a style setter follows theme and contrast changes -->
+            <!-- Segments of the title bar's User | Administrator switch -->
+            <Style x:Key="SideButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="Padding" Value="10,3,10,4" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style x:Key="CurrentSideButtonStyle" TargetType="Button" BasedOn="{StaticResource SideButtonStyle}">
+                <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            </Style>
+
+            <!-- The administrator side's shield, in the colors of the status dots -->
+            <Style x:Key="SuccessShieldStyle" TargetType="FontIcon">
+                <Setter Property="Foreground" Value="{ThemeResource SystemFillColorSuccessBrush}" />
+            </Style>
+
+            <Style x:Key="CautionShieldStyle" TargetType="FontIcon">
+                <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+            </Style>
+
+            <Style x:Key="CriticalShieldStyle" TargetType="FontIcon">
+                <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+            </Style>
+
+            <Style x:Key="NeutralShieldStyle" TargetType="FontIcon">
+                <Setter Property="Foreground" Value="{ThemeResource SystemFillColorNeutralBrush}" />
+            </Style>
+
             <Style x:Key="SuccessDotStyle" TargetType="Ellipse">
                 <Setter Property="Fill" Value="{ThemeResource SystemFillColorSuccessBrush}" />
             </Style>

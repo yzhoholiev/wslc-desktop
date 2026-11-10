@@ -5,8 +5,6 @@ namespace WslcDesktop.Interop;
 /// </summary>
 public sealed class WindowMessageHook : IDisposable
 {
-    private const nuint SubclassId = 0x5753_4C44;
-
     private readonly uint _message;
     private readonly WindowSubclass _subclass;
 
@@ -19,7 +17,7 @@ public sealed class WindowMessageHook : IDisposable
     public WindowMessageHook(nint hwnd, uint message, Action<Exception> onFailure)
     {
         _message = message;
-        _subclass = new WindowSubclass(hwnd, SubclassId, Handle, onFailure);
+        _subclass = new WindowSubclass(hwnd, Handle, onFailure);
         _subclass.Allow(message);
     }
 

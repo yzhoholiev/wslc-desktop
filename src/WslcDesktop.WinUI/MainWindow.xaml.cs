@@ -10,6 +10,7 @@ using WslcDesktop.Controls;
 using WslcDesktop.Interop;
 using WslcDesktop.Models;
 using WslcDesktop.Services;
+using WslcDesktop.ViewModels;
 
 namespace WslcDesktop;
 
@@ -45,15 +46,18 @@ public sealed partial class MainWindow
         RestorePlacement();
 
         AppTitleBar.Title = AppIdentity.Name;
-        if (Elevation.IsElevated)
-        {
-            AdministratorBadge.Visibility = Visibility.Visible;
-        }
+        CurrentSideButton.Style = Resource("CurrentSideButtonStyle");
 
         _launchMessages = new WindowMessageHook(_hwnd, Program.ActivateMessage, ex => Services.Notifier.Error("Launch command failed", ex.Message));
         _launchMessages.Received += argument => Execute((LaunchCommand)argument);
 
-        _tray = new TrayIcon(_hwnd, iconPath, AppIdentity.Name, ex => Services.Notifier.Error("Tray action failed", ex.Message));
+        string trayIconPath = Elevation.IsElevated ? AdministratorIcon("tray", BadgeName(RuntimeState.Connecting)) : iconPath;
+        _tray = new TrayIcon(_hwnd, trayIconPath, AppIdentity.Name, ex => Services.Notifier.Error("Tray action failed", ex.Message));
+        if (Elevation.IsElevated)
+        {
+            _overlay = new TaskbarOverlay(_hwnd, CrashLog.Write);
+        }
+
         _tray.Activated += ShowAndActivate;
         AppIdentity.SetRelaunchTarget(_hwnd);
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => AppIdentity.SetJumpListTasks());
@@ -76,6 +80,7 @@ public sealed partial class MainWindow
             Services.Monitor.Updated -= OnRuntimeUpdated;
             Services.Monitor.PropertyChanged -= OnMonitorPropertyChanged;
             _launchMessages.Dispose();
+            _overlay?.Dispose();
             _tray.Dispose();
             _trayMenu.Close();
         };
@@ -118,25 +123,14 @@ public sealed partial class MainWindow
     private void OnRuntimeUpdated()
     {
         RuntimeSnapshot snapshot = Services.Monitor.Latest;
-        (string text, string dotStyle) = snapshot switch
-        {
-            { IsWslcMissing: true } => ("wslc not installed", "CriticalDotStyle"),
-            { Error: not null } => ("wslc unavailable", "CriticalDotStyle"),
-            { IsRunning: true, Containers.Count: 0 } => ("Running · no containers", "SuccessDotStyle"),
-            { IsRunning: true } => (
-                $"Running · {snapshot.RunningContainers} of {Humanize.Count(snapshot.Containers.Count, "container")} up",
-                "SuccessDotStyle"),
-            { Info: not null } => ("Runtime stopped", "NeutralDotStyle"),
-            _ => ("Connecting…", "NeutralDotStyle")
-        };
-
-        RuntimeText.Text = text;
-        RuntimeDot.Style = (Style)Application.Current.Resources[dotStyle];
+        string status = Labels.RuntimeStatus(snapshot);
+        ShowSides(snapshot, status);
+        ShowAdministratorBadge(snapshot.State);
         ShowCount(ContainersBadge, snapshot.IsRunning ? snapshot.Containers.Count : 0);
         ShowCount(ImagesBadge, snapshot.IsRunning ? snapshot.Inventory?.Images ?? 0 : 0);
         ShowCount(VolumesBadge, snapshot.IsRunning ? snapshot.Inventory?.Volumes ?? 0 : 0);
         ShowCount(NetworksBadge, snapshot.IsRunning ? snapshot.Inventory?.Networks ?? 0 : 0);
-        _tray.SetTooltip($"{AppIdentity.Name} · {text}");
+        _tray.SetTooltip($"{AppIdentity.Name} · {status}");
     }
 
     public void ApplyBackdrop(string name) => SystemBackdrop = name switch

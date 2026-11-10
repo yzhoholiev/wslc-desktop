@@ -13,7 +13,14 @@ public static class Wslc
     /// <summary>
     ///     The session wslc commands use when none is named.
     /// </summary>
-    public static string DefaultSessionName { get; } =
+    public static string DefaultSessionName { get; } = SessionNameFor(Elevation.IsElevated);
+
+    /// <summary>
+    ///     The session an instance of the other elevation uses, which this one can see in wslc info but not always read.
+    /// </summary>
+    public static string OtherSessionName { get; } = SessionNameFor(!Elevation.IsElevated);
+
+    internal static string SessionNameFor(bool elevated) =>
         // Observed with wslc 3.0.3: elevated and non-elevated processes of one user get separate sessions, i.e. separate VMs.
-        (Elevation.IsElevated ? "wslc-cli-admin-" : "wslc-cli-") + Environment.UserName;
+        (elevated ? "wslc-cli-admin-" : "wslc-cli-") + Environment.UserName;
 }

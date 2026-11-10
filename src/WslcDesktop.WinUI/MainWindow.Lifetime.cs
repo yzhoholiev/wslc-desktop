@@ -61,20 +61,14 @@ public sealed partial class MainWindow
     /// </summary>
     internal void Execute(LaunchCommand command)
     {
+        if (PageFor(command) is { } page)
+        {
+            ShowPage(page);
+            return;
+        }
+
         switch (command)
         {
-            case LaunchCommand.ShowContainers:
-                ShowPage("containers");
-                break;
-            case LaunchCommand.ShowImages:
-                ShowPage("images");
-                break;
-            case LaunchCommand.ShowVolumes:
-                ShowPage("volumes");
-                break;
-            case LaunchCommand.ShowWsl:
-                ShowPage("wsl");
-                break;
             case LaunchCommand.StartRuntime:
                 _ = Services.Actions.StartRuntimeInBackgroundAsync();
                 break;
@@ -90,7 +84,11 @@ public sealed partial class MainWindow
         }
     }
 
-    public async Task ExitApplicationAsync()
+    /// <summary>
+    ///     Quits the app, first stopping the runtime when the settings ask for it, unless <paramref name="keepRuntime" /> leaves it running.
+    /// </summary>
+    /// <param name="keepRuntime">True when the app is replaced by an instance on the other side rather than quit.</param>
+    public async Task ExitApplicationAsync(bool keepRuntime = false)
     {
         if (_isExiting)
         {
@@ -101,7 +99,7 @@ public sealed partial class MainWindow
 
         // A programmatic Close() does not raise AppWindow.Closing, where placement is otherwise saved.
         SavePlacement();
-        if (Services.Settings.Current.StopRuntimeOnExit)
+        if (!keepRuntime && Services.Settings.Current.StopRuntimeOnExit)
         {
             AppWindow.Hide();
             _tray.SetTooltip($"{AppIdentity.Name} · Stopping the container runtime…");

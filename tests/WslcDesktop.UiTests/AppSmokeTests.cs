@@ -36,9 +36,9 @@ public sealed class AppSmokeTests(AppSession app)
         string[] sampled = ["Runtime stopped", "Running", "wslc not installed", "wslc unavailable"];
 
         AutomationElement? status = await WaitForAsync(() => app.Window
-            .FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text))
+            .FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button))
             .Cast<AutomationElement>()
-            .FirstOrDefault(element => sampled.Any(text => element.Current.Name.StartsWith(text, StringComparison.Ordinal))));
+            .FirstOrDefault(element => sampled.Any(text => element.Current.HelpText.Contains(text, StringComparison.Ordinal))));
 
         Assert.NotNull(status);
         AssertNoCrash();

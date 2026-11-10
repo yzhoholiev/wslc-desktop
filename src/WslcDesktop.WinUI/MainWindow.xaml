@@ -12,20 +12,30 @@
             </TitleBar.IconSource>
             <TitleBar.RightHeader>
                 <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,8,0" VerticalAlignment="Center">
-                    <StackPanel
-                        x:Name="AdministratorBadge"
-                        Orientation="Horizontal"
-                        Spacing="4"
-                        Margin="0,0,12,0"
+                    <!-- wslc gives normal and elevated instances separate runtimes; the side this window shows is highlighted -->
+                    <Border
+                        Padding="2"
                         VerticalAlignment="Center"
-                        Visibility="Collapsed"
-                        ToolTipService.ToolTip="Running as administrator: wslc gives this instance its own session and VM, with its own containers."
-                        AutomationProperties.Name="Running as administrator">
-                        <FontIcon Glyph="&#xEA18;" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
-                        <TextBlock Text="Administrator" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <Ellipse x:Name="RuntimeDot" Width="8" Height="8" VerticalAlignment="Center" />
-                    <TextBlock x:Name="RuntimeText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                        CornerRadius="5"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <Button x:Name="UserSideButton" Style="{StaticResource SideButtonStyle}" Click="OnSideClick" AutomationProperties.Name="User runtime">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Ellipse x:Name="UserSideDot" Width="8" Height="8" VerticalAlignment="Center" />
+                                    <TextBlock Text="User" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="AdministratorSideButton" Style="{StaticResource SideButtonStyle}" Click="OnSideClick"
+                                    AutomationProperties.Name="Administrator runtime">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon x:Name="AdministratorSideShield" Glyph="&#xEA18;" FontSize="12" />
+                                    <TextBlock Text="Administrator" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
                     <TextBlock Text="Live" Margin="12,0,0,0" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
                     <ToggleSwitch
                         x:Name="LiveToggle"

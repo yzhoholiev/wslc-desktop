@@ -15,7 +15,6 @@ public sealed unsafe class TrayIcon : IDisposable
 {
     private const uint CallbackMessage = PInvoke.WM_APP + 1;
     private const uint IconId = 1;
-    private const nuint SubclassId = 0x5753_4C43;
 
     /// <summary>
     ///     Explorer broadcasts this after it restarts; tray icons must be re-added.
@@ -23,7 +22,7 @@ public sealed unsafe class TrayIcon : IDisposable
     private static readonly uint TaskbarCreatedMessage = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
     private readonly HWND _hwnd;
-    private readonly string _iconPath;
+    private string _iconPath;
     private SafeIconHandle _icon;
     private int _iconSize;
     private readonly WindowSubclass _subclass;
@@ -43,9 +42,9 @@ public sealed unsafe class TrayIcon : IDisposable
         _tooltip = tooltip;
         _iconPath = iconPath;
         _iconSize = IconSize();
-        _icon = LoadIcon(_iconSize);
+        _icon = SafeIconHandle.FromFile(_iconPath, _iconSize);
 
-        _subclass = new WindowSubclass(hwnd, SubclassId, Handle, onFailure);
+        _subclass = new WindowSubclass(hwnd, Handle, onFailure);
         _subclass.Allow(TaskbarCreatedMessage);
         Add();
     }
@@ -73,6 +72,20 @@ public sealed unsafe class TrayIcon : IDisposable
     ///     Raised on right click with the cursor position in physical screen pixels.
     /// </summary>
     public event Action<ScreenPoint>? ContextMenuRequested;
+
+    /// <summary>
+    ///     Shows another .ico file in the notification area.
+    /// </summary>
+    public void SetIcon(string iconPath)
+    {
+        if (_disposed || iconPath == _iconPath)
+        {
+            return;
+        }
+
+        _iconPath = iconPath;
+        UpdateIcon(_iconSize);
+    }
 
     public void SetTooltip(string tooltip)
     {
@@ -121,9 +134,7 @@ public sealed unsafe class TrayIcon : IDisposable
         // The window gets WM_DPICHANGED only for its own display; a scale change on another one arrives as WM_SETTINGCHANGE.
         else if (message is PInvoke.WM_DPICHANGED or PInvoke.WM_DISPLAYCHANGE or PInvoke.WM_SETTINGCHANGE && IconSize() is var size && size != _iconSize)
         {
-            ReplaceIcon(size);
-            NOTIFYICONDATAW data = CreateData(NOTIFY_ICON_DATA_FLAGS.NIF_ICON);
-            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, in data);
+            UpdateIcon(size);
         }
 
         return false;
@@ -137,18 +148,22 @@ public sealed unsafe class TrayIcon : IDisposable
         // A per-monitor DPI-aware process must scale the 16 px small-icon size itself; the .ico has frames up to 40 px.
         HMONITOR primary = PInvoke.MonitorFromPoint(default, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY);
         uint dpi = PInvoke.GetDpiForMonitor(primary, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _).Succeeded ? dpiX : PInvoke.GetDpiForWindow(_hwnd);
-        return (int)(16 * dpi / 96);
+        return SafeIconHandle.SmallIconSize(dpi);
     }
-
-    private SafeIconHandle LoadIcon(int size) =>
-        new((nint)PInvoke.LoadImage(default, _iconPath, GDI_IMAGE_TYPE.IMAGE_ICON, size, size, IMAGE_FLAGS.LR_LOADFROMFILE).Value);
 
     private void ReplaceIcon(int size)
     {
         SafeIconHandle previous = _icon;
         _iconSize = size;
-        _icon = LoadIcon(size);
+        _icon = SafeIconHandle.FromFile(_iconPath, size);
         previous.Dispose();
+    }
+
+    private void UpdateIcon(int size)
+    {
+        ReplaceIcon(size);
+        NOTIFYICONDATAW data = CreateData(NOTIFY_ICON_DATA_FLAGS.NIF_ICON);
+        PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, in data);
     }
 
     private void Add()

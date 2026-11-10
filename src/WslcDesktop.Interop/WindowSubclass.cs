@@ -12,6 +12,8 @@ namespace WslcDesktop.Interop;
 /// </summary>
 internal sealed unsafe class WindowSubclass : IDisposable
 {
+    private static long _lastId;
+
     private readonly Func<uint, nuint, nint, bool> _handle;
     private readonly HWND _hwnd;
     private readonly nuint _id;
@@ -23,13 +25,13 @@ internal sealed unsafe class WindowSubclass : IDisposable
     ///     Starts offering the window's messages to the handler.
     /// </summary>
     /// <param name="hwnd">The window whose messages are hooked.</param>
-    /// <param name="id">Tells this hook apart from others on the same window.</param>
     /// <param name="handle">Gets the message, wParam and lParam; returns true when it handled the message, which then goes no further.</param>
     /// <param name="onFailure">Reports an exception the handler threw, after it is logged; it must not throw.</param>
-    public WindowSubclass(nint hwnd, nuint id, Func<uint, nuint, nint, bool> handle, Action<Exception> onFailure)
+    public WindowSubclass(nint hwnd, Func<uint, nuint, nint, bool> handle, Action<Exception> onFailure)
     {
         _hwnd = new HWND(hwnd);
-        _id = id;
+        // Every hook shares SubclassProc, so the ID alone must tell hooks on one window apart.
+        _id = (nuint)Interlocked.Increment(ref _lastId);
         _handle = handle;
         _onFailure = onFailure;
         _self = GCHandle.Alloc(this);

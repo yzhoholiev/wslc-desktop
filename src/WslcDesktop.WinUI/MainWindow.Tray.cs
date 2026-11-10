@@ -3,6 +3,7 @@ using WslcDesktop.Controls;
 using WslcDesktop.Interop;
 using WslcDesktop.Models;
 using WslcDesktop.Services;
+using WslcDesktop.ViewModels;
 
 namespace WslcDesktop;
 
@@ -36,10 +37,10 @@ public sealed partial class MainWindow
     private TrayMenuItem[] BuildTrayMenu()
     {
         RuntimeSnapshot snapshot = Services.Monitor.Latest;
-        uint statusDot = snapshot switch
+        uint statusDot = snapshot.State switch
         {
-            { Error: not null } => ErrorDot,
-            { IsRunning: true } => RunningDot,
+            RuntimeState.Error => ErrorDot,
+            RuntimeState.Running => RunningDot,
             _ => StoppedDot
         };
 
@@ -54,9 +55,15 @@ public sealed partial class MainWindow
                 new TrayMenuItem("Start container runtime", () => _ = Services.Actions.StartRuntimeInBackgroundAsync(), Glyph: Glyphs.Start)
             ];
 
+        TrayMenuItem[] reopen = [new TrayMenuItem(Labels.ReopenLabel(!Elevation.IsElevated), () => _ = SwitchSideAsync(),
+            Glyph: Elevation.IsElevated ? null : Glyphs.Shield, DotColor: snapshot.IsOtherSideRunning == true ? RunningDot : StoppedDot)];
+
+        TrayMenuItem status = new(Labels.RuntimeStatus(snapshot), Children: reopen, Glyph: Elevation.IsElevated ? Glyphs.Shield : null,
+            DotColor: statusDot);
+
         return
         [
-            new TrayMenuItem(RuntimeText.Text, IsEnabled: false, DotColor: statusDot),
+            status,
             TrayMenuItem.Separator,
             new TrayMenuItem($"Open {AppIdentity.DisplayName}", ShowAndActivate, IsDefault: true, Glyph: Glyphs.Open),
             TrayMenuItem.Separator,

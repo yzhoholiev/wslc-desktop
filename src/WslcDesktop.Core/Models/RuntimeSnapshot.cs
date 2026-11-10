@@ -2,6 +2,14 @@ using WslcDesktop.Services;
 
 namespace WslcDesktop.Models;
 
+public enum RuntimeState
+{
+    Connecting,
+    Stopped,
+    Running,
+    Error
+}
+
 public sealed record Inventory(
     int Images,
     long ImagesSize,
@@ -32,6 +40,22 @@ public sealed record RuntimeSnapshot(
     public bool IsRunning => Info is not null && HasDefaultSession(Info);
 
     /// <summary>
+    ///     Whether the session of the other elevation exists, or null before wslc has answered.
+    /// </summary>
+    public bool? IsOtherSideRunning => Info is null ? null : HasSession(Info, Wslc.OtherSessionName);
+
+    /// <summary>
+    ///     The state every view shows the runtime in, whatever words or colors it uses.
+    /// </summary>
+    public RuntimeState State => this switch
+    {
+        { IsWslcMissing: true } or { Error: not null } => RuntimeState.Error,
+        { IsRunning: true } => RuntimeState.Running,
+        { Info: not null } => RuntimeState.Stopped,
+        _ => RuntimeState.Connecting
+    };
+
+    /// <summary>
     ///     Whether wslc answered without an error and the session does not exist.
     /// </summary>
     public bool IsKnownStopped => this is { Info: not null, IsRunning: false, Error: null };
@@ -53,6 +77,7 @@ public sealed record RuntimeSnapshot(
         Stats = new Dictionary<string, ContainerStatsDto>()
     };
 
-    public static bool HasDefaultSession(WslcInfoDto info) =>
-        info.Server.Sessions.Any(session => session.Name == Wslc.DefaultSessionName);
+    public static bool HasDefaultSession(WslcInfoDto info) => HasSession(info, Wslc.DefaultSessionName);
+
+    private static bool HasSession(WslcInfoDto info, string name) => info.Server.Sessions.Any(session => session.Name == name);
 }
