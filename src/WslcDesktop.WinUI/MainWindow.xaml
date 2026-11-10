@@ -3,11 +3,10 @@
 <Window
     x:Class="WslcDesktop.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="WSLC Desktop">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid RowDefinitions="Auto, *">
-        <TitleBar x:Name="AppTitleBar" Title="WSLC Desktop" IsPaneToggleButtonVisible="True" PaneToggleRequested="OnPaneToggleRequested">
+        <TitleBar x:Name="AppTitleBar" IsPaneToggleButtonVisible="True" PaneToggleRequested="OnPaneToggleRequested">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="ms-appx:///Assets/AppIcon.png" />
             </TitleBar.IconSource>

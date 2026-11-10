@@ -44,9 +44,9 @@ public sealed partial class MainWindow
         AppWindow.SetIcon(iconPath);
         RestorePlacement();
 
+        AppTitleBar.Title = AppIdentity.Name;
         if (Elevation.IsElevated)
         {
-            Title = AppIdentity.Name;
             AdministratorBadge.Visibility = Visibility.Visible;
         }
 
