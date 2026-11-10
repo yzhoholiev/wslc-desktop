@@ -3,6 +3,7 @@ param([string]$AssetsDir = "$PSScriptRoot\..\src\WslcDesktop.WinUI\Assets\JumpLi
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
+. "$PSScriptRoot\IconFile.ps1"
 
 # The app icon's container amber, readable on both the light and the dark jump list.
 $color = [System.Drawing.ColorTranslator]::FromHtml('#D9A100')
@@ -38,26 +39,7 @@ if ('Segoe Fluent Icons' -notin (New-Object System.Drawing.Text.InstalledFontCol
 New-Item -ItemType Directory -Force $AssetsDir | Out-Null
 $sizes = 16, 20, 24, 32, 48
 foreach ($name in $icons.Keys) {
-    $pngs = foreach ($size in $sizes) {
-        $bmp = Render $icons[$name] $size
-        $ms = New-Object System.IO.MemoryStream
-        $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-        $bmp.Dispose()
-        , $ms.ToArray()
-    }
-
-    $ico = New-Object System.IO.MemoryStream
-    $writer = New-Object System.IO.BinaryWriter $ico
-    $writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]$sizes.Count)
-    $offset = 6 + 16 * $sizes.Count
-    for ($i = 0; $i -lt $sizes.Count; $i++) {
-        $writer.Write([byte]$sizes[$i]); $writer.Write([byte]$sizes[$i]); $writer.Write([byte]0); $writer.Write([byte]0)
-        $writer.Write([uint16]1); $writer.Write([uint16]32)
-        $writer.Write([uint32]$pngs[$i].Length); $writer.Write([uint32]$offset)
-        $offset += $pngs[$i].Length
-    }
-    foreach ($png in $pngs) { $writer.Write($png) }
-    [System.IO.File]::WriteAllBytes("$AssetsDir\$name.ico", $ico.ToArray())
+    Write-IconFile "$AssetsDir\$name.ico" $sizes { param($size) Render $icons[$name] $size }
 }
 
 Write-Host "Wrote $($icons.Count) icons to $AssetsDir"

@@ -3,6 +3,7 @@ param([string]$AssetsDir = "$PSScriptRoot\..\src\WslcDesktop.WinUI\Assets")
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
+. "$PSScriptRoot\IconFile.ps1"
 
 $blue = '#1E73D2'; $yellow = '#F7C21B'; $yellowDark = '#D9A100'; $orange = '#F58A1F'; $black = '#141414'
 
@@ -70,27 +71,8 @@ function Render([int]$size) {
     return $bmp
 }
 
-$sizes = 16, 20, 24, 32, 40, 48, 64, 256
-$pngs = foreach ($size in $sizes) {
-    $bmp = Render $size
-    $ms = New-Object System.IO.MemoryStream
-    $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-    if ($size -eq 256) { $bmp.Save("$AssetsDir\AppIcon.png", [System.Drawing.Imaging.ImageFormat]::Png) }
-    $bmp.Dispose()
-    , $ms.ToArray()
-}
-
-$ico = New-Object System.IO.MemoryStream
-$writer = New-Object System.IO.BinaryWriter $ico
-$writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]$sizes.Count)
-$offset = 6 + 16 * $sizes.Count
-for ($i = 0; $i -lt $sizes.Count; $i++) {
-    $dim = [byte]($sizes[$i] % 256)
-    $writer.Write($dim); $writer.Write($dim); $writer.Write([byte]0); $writer.Write([byte]0)
-    $writer.Write([uint16]1); $writer.Write([uint16]32)
-    $writer.Write([uint32]$pngs[$i].Length); $writer.Write([uint32]$offset)
-    $offset += $pngs[$i].Length
-}
-foreach ($png in $pngs) { $writer.Write($png) }
-[System.IO.File]::WriteAllBytes("$AssetsDir\AppIcon.ico", $ico.ToArray())
+Write-IconFile "$AssetsDir\AppIcon.ico" @(16, 20, 24, 32, 40, 48, 64, 256) { param($size) Render $size }
+$png = Render 256
+$png.Save("$AssetsDir\AppIcon.png", [System.Drawing.Imaging.ImageFormat]::Png)
+$png.Dispose()
 Write-Host "Wrote $AssetsDir\AppIcon.ico and AppIcon.png"
