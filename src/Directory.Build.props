@@ -3,7 +3,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <RootNamespace>WslcDesktop</RootNamespace>
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
@@ -21,7 +21,7 @@
     <PackageReference Include="GitVersion.MsBuild" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- net10.0-windows alone means Windows 7 to the platform analyzer; the libraries declare the app's minimum, Windows 10 2004, instead -->
+  <!-- net11.0-windows alone means Windows 7 to the platform analyzer; the libraries declare the app's minimum, Windows 10 2004, instead -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' != 'WslcDesktop.WinUI'">
     <GenerateSupportedOSPlatformAttribute>false</GenerateSupportedOSPlatformAttribute>
   </PropertyGroup>

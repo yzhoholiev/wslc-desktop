@@ -13,7 +13,7 @@
   <a href="https://github.com/yzhoholiev/wslc-desktop/releases/latest"><img src="https://img.shields.io/github/v/release/yzhoholiev/wslc-desktop" alt="latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows-11-0078D4.svg" alt="Windows 11">
-  <img src="https://img.shields.io/badge/.NET_10-Native_AOT-512BD4.svg" alt=".NET 10 Native AOT">
+  <img src="https://img.shields.io/badge/.NET_11-Native_AOT-512BD4.svg" alt=".NET 11 Native AOT">
 </p>
 
 <p align="center">
@@ -79,7 +79,7 @@ The jump list starts the app with these arguments, and they work from a shortcut
 | `src/WslcDesktop.Launcher` | The single-file launcher that carries and unpacks the app |
 | `tests/` | xUnit v3 suites for each project, plus UI and end-to-end tests that drive the published app |
 
-Building needs the .NET 10 SDK and Visual Studio 2026 (or 2022) with the **Desktop development with C++** workload, because the Native AOT linker uses MSVC.
+Building needs the .NET 11 SDK and Visual Studio 2026 (or 2022) with the **Desktop development with C++** workload, because the Native AOT linker uses MSVC.
 
 ```powershell
 dotnet run --project src/WslcDesktop.WinUI                      # debug build (JIT)

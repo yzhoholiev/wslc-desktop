@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for coding agents (and humans) working on WSLC Desktop: a WinUI 3 desktop UI for `wslc`, the WSL container CLI, published as a .NET 10 Native AOT app. Read `README.md` for what the app does; this file is about how the code is meant to be changed.
+Guidance for coding agents (and humans) working on WSLC Desktop: a WinUI 3 desktop UI for `wslc`, the WSL container CLI, published as a .NET 11 Native AOT app. Read `README.md` for what the app does; this file is about how the code is meant to be changed.
 
 ## Build, test, verify
 
@@ -104,7 +104,7 @@ These fail only in the published AOT build, often with misleading errors:
 - **Theme changes:** a brush read from resources keeps the theme it was read in, so a light/dark or contrast switch leaves it stale. Colors chosen in code or by an `x:Bind` function apply a style whose setters use `{ThemeResource}` (`SuccessDotStyle`, `NeutralPillStyle`, `TertiaryTextStyle`); only UI rebuilt on each open (dialogs, flyouts) may take a brush.
 - **Presenter:** `AppWindow.Presenter as OverlappedPresenter` is `null`; create and keep an `OverlappedPresenter`.
 - **JSON:** source-generated contexts only (`WslcJsonContext`, `DockerEngineJsonContext`, `AppSettingsJsonContext`); register every new DTO there.
-- **Classes CsWinRT projects** (implementing WinRT interfaces, or nested in such types) must be `partial` (CsWinRT1028). This applies only to `WslcDesktop.WinUI` and its tests: the libraries and the other test projects target `net10.0-windows`, without the WinRT projection, so they cannot take a WinRT dependency.
+- **Classes CsWinRT projects** (implementing WinRT interfaces, or nested in such types) must be `partial` (CsWinRT1028). This applies only to `WslcDesktop.WinUI` and its tests: the libraries and the other test projects target `net11.0-windows`, without the WinRT projection, so they cannot take a WinRT dependency.
 - **ContentDialog** measures its content at full height and clips it. Long dialogs wrap their content in a `ScrollViewer` with an explicit `MaxHeight` tied to the window (`RunImageForm.TrackWindow`).
 - **Async UI events:** `async void` only for event handlers, and only around calls that report their own errors; anything invoked from native code (window subclass procedures, tray callbacks) catches and logs to `CrashLog`.
 
