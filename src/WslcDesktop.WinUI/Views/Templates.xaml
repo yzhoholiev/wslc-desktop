@@ -7,11 +7,7 @@
     xmlns:models="using:WslcDesktop.Models">
 
     <DataTemplate x:Key="KeyValueTemplate" x:DataType="models:KeyValueEntry">
-        <Grid ColumnSpacing="12" Padding="0,3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="170" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <Grid ColumnSpacing="12" Padding="0,3" ColumnDefinitions="170, *">
             <TextBlock Text="{x:Bind Key}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Column="1" Text="{x:Bind Value}" IsTextSelectionEnabled="True" TextTrimming="CharacterEllipsis" />
         </Grid>

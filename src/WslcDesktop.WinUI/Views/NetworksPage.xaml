@@ -11,15 +11,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="RowTemplate" x:DataType="vm:NetworkItem">
-            <controls:ClickableRow Height="56" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="100" />
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="1.5*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="48" />
-                </Grid.ColumnDefinitions>
+            <controls:ClickableRow Height="56" ColumnSpacing="12" ColumnDefinitions="2*, 100, 120, 1.5*, 1.2*, 48">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock Text="{x:Bind ShortId}" FontFamily="{StaticResource MonoFont}"
@@ -58,15 +50,7 @@
             </StackPanel>
         </views:ResourceListView.Toolbar>
         <views:ResourceListView.ColumnHeaders>
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="100" />
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="1.5*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="48" />
-                </Grid.ColumnDefinitions>
+            <Grid ColumnSpacing="12" ColumnDefinitions="2*, 100, 120, 1.5*, 1.2*, 48">
                 <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="1" Text="DRIVER" Key="driver" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="2" Text="KIND" Key="kind" Sort="{x:Bind ViewModel.Sort}" />

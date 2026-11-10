@@ -11,14 +11,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="RowTemplate" x:DataType="vm:VolumeItem">
-            <controls:ClickableRow Height="56" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.6*" />
-                    <ColumnDefinition Width="80" />
-                    <ColumnDefinition Width="2.4*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="48" />
-                </Grid.ColumnDefinitions>
+            <controls:ClickableRow Height="56" ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 48">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis"
                                Style="{StaticResource BodyStrongTextBlockStyle}" ToolTipService.ToolTip="{x:Bind Name}"
@@ -63,14 +56,7 @@
             </StackPanel>
         </views:ResourceListView.Toolbar>
         <views:ResourceListView.ColumnHeaders>
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.6*" />
-                    <ColumnDefinition Width="80" />
-                    <ColumnDefinition Width="2.4*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="48" />
-                </Grid.ColumnDefinitions>
+            <Grid ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 48">
                 <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="1" Text="DRIVER" Key="driver" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="2" Text="MOUNTPOINT" Key="mountpoint" Sort="{x:Bind ViewModel.Sort}" />

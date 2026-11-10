@@ -7,24 +7,13 @@
     xmlns:controls="using:WslcDesktop.Controls"
     xmlns:vm="using:WslcDesktop.ViewModels">
 
-    <Grid Padding="32,24,32,24" RowSpacing="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
+    <Grid Padding="32,24,32,24" RowSpacing="16" RowDefinitions="Auto, Auto, Auto, *">
         <StackPanel>
             <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock Text="{x:Bind List.Summary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" ColumnSpacing="12" ColumnDefinitions="280, *">
             <TextBox PlaceholderText="{x:Bind SearchPlaceholder, Mode=OneWay}"
                      Text="{x:Bind List.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <ContentPresenter Grid.Column="1" HorizontalAlignment="Right" Content="{x:Bind Toolbar, Mode=OneWay}" />
@@ -43,12 +32,7 @@
             </Grid.RowDefinitions>
 
             <Border Style="{StaticResource CardStyle}" Padding="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
+                <Grid RowDefinitions="Auto, *">
                     <Border Padding="16,10,12,10" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
                         <ContentPresenter Content="{x:Bind ColumnHeaders, Mode=OneWay}" HorizontalContentAlignment="Stretch" />
                     </Border>

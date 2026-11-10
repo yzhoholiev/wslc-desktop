@@ -8,26 +8,13 @@
     xmlns:vm="using:WslcDesktop.ViewModels"
     Background="Transparent">
 
-    <Grid Padding="32,24,32,24" RowSpacing="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
+    <Grid Padding="32,24,32,24" RowSpacing="16" RowDefinitions="Auto, Auto, Auto, *">
         <StackPanel>
             <TextBlock Text="Containers" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock Text="{x:Bind ViewModel.Summary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" ColumnSpacing="12" ColumnDefinitions="320, Auto, *, Auto">
             <TextBox PlaceholderText="Search by name, image or ID" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <CheckBox Grid.Column="1" Content="Show stopped" IsChecked="{x:Bind ViewModel.ShowStopped, Mode=TwoWay}" />
             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
@@ -60,22 +47,8 @@
             </Grid.RowDefinitions>
 
             <Border Style="{StaticResource CardStyle}" Padding="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <Grid Padding="16,10,12,10" ColumnSpacing="12" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="1.5*" />
-                            <ColumnDefinition Width="1.5*" />
-                            <ColumnDefinition Width="64" />
-                            <ColumnDefinition Width="84" />
-                            <ColumnDefinition Width="152" />
-                        </Grid.ColumnDefinitions>
+                <Grid RowDefinitions="Auto, *">
+                    <Grid Padding="16,10,12,10" ColumnSpacing="12" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" ColumnDefinitions="2*, 2*, 1.5*, 1.5*, 64, 84, 152">
                         <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                         <controls:SortHeader Grid.Column="1" Text="IMAGE" Key="image" Sort="{x:Bind ViewModel.Sort}" />
                         <controls:SortHeader Grid.Column="2" Text="STATUS" Key="status" Sort="{x:Bind ViewModel.Sort}" />
@@ -100,16 +73,7 @@
                         </ListView.ItemContainerTransitions>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="vm:ContainerItem">
-                                <controls:ClickableRow Height="56" ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="1.5*" />
-                                        <ColumnDefinition Width="1.5*" />
-                                        <ColumnDefinition Width="64" />
-                                        <ColumnDefinition Width="84" />
-                                        <ColumnDefinition Width="152" />
-                                    </Grid.ColumnDefinitions>
+                                <controls:ClickableRow Height="56" ColumnSpacing="12" ColumnDefinitions="2*, 2*, 1.5*, 1.5*, 64, 84, 152">
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" Style="{StaticResource BodyStrongTextBlockStyle}" />
                                         <TextBlock Text="{x:Bind ShortId}" FontFamily="{StaticResource MonoFont}"
@@ -172,12 +136,7 @@
             </Border>
 
             <Border Grid.Row="1" Height="380" Style="{StaticResource CardStyle}" Padding="0" Visibility="{x:Bind ViewModel.IsDetailsOpen, Mode=OneWay}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
+                <Grid RowDefinitions="Auto, *">
                     <Grid Padding="16,12,8,0">
                         <StackPanel Spacing="2">
                             <TextBlock Text="{x:Bind ViewModel.Selected.Name, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}"
@@ -203,11 +162,7 @@
 
                     <Pivot Grid.Row="1">
                         <PivotItem Header="Logs">
-                            <Grid RowSpacing="8">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                            <Grid RowSpacing="8" RowDefinitions="Auto, *">
                                 <StackPanel Orientation="Horizontal" Spacing="20">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock Text="Tail" VerticalAlignment="Center" />

@@ -25,12 +25,7 @@
 
             <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
 
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
+            <Grid ColumnSpacing="12" ColumnDefinitions="3*, 2*">
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Platform" Style="{StaticResource CardTitleStyle}" />
@@ -48,11 +43,7 @@
                                 <TextBlock Text="Shut down WSL" />
                             </StackPanel>
                         </Button>
-                        <Grid ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                        <Grid ColumnSpacing="8" ColumnDefinitions="*, Auto">
                             <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Command="{x:Bind ViewModel.UpdateCommand}"
                                     AutomationProperties.Name="Update WSL">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -81,13 +72,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Distributions" Style="{StaticResource CardTitleStyle}" />
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="140" />
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition Width="120" />
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnSpacing="12" ColumnDefinitions="2*, 140, 80, 120">
                         <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.DistroSort}" />
                         <controls:SortHeader Grid.Column="1" Text="STATE" Key="state" Sort="{x:Bind ViewModel.DistroSort}" />
                         <controls:SortHeader Grid.Column="2" Text="WSL" Key="version" Sort="{x:Bind ViewModel.DistroSort}" />
@@ -96,13 +81,7 @@
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Distros}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:WslDistro">
-                                <Grid ColumnSpacing="12" Height="40">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="80" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
+                                <Grid ColumnSpacing="12" Height="40" ColumnDefinitions="2*, 140, 80, 120">
                                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind Name}" Style="{StaticResource BodyStrongTextBlockStyle}" />
                                         <Border

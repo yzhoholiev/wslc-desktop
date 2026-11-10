@@ -14,11 +14,7 @@
             <Grid>
                 <StackPanel Spacing="4">
                     <TextBlock Text="Dashboard" Style="{StaticResource TitleTextBlockStyle}" />
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnSpacing="8" ColumnDefinitions="Auto, *">
                         <Ellipse Width="8" Height="8" VerticalAlignment="Center" Style="{x:Bind vm:Bindings.RuntimeDotStyle(ViewModel.IsRunning), Mode=OneWay}" />
                         <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap" />
@@ -124,14 +120,7 @@
             </InfoBar>
 
             <!-- Inventory -->
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
+            <Grid ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
                 <controls:StatCard Title="Containers" Glyph="&#xE7B8;" Tag="containers" Click="OnStatCardClick" AutomationProperties.Name="Open containers"
                                    BadgeBrush="{ThemeResource ContainersBadgeBrush}" BadgeBackground="{ThemeResource ContainersBadgeBackgroundBrush}"
                                    Value="{x:Bind ViewModel.ContainersCount, Mode=OneWay}" Detail="{x:Bind ViewModel.ContainersDetail, Mode=OneWay}"
@@ -150,13 +139,7 @@
             </Grid>
 
             <TextBlock Text="Container VM resources" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
+            <Grid ColumnSpacing="12" ColumnDefinitions="*, *, *">
                 <controls:MetricCard Title="CPU" Value="{x:Bind ViewModel.CpuValue, Mode=OneWay}"
                                      Caption="{x:Bind ViewModel.CpuCaption, Mode=OneWay}" History="{x:Bind ViewModel.CpuHistory, Mode=OneWay}"
                                      HasHistory="{x:Bind ViewModel.HasHistory, Mode=OneWay}" />
@@ -166,13 +149,7 @@
                                      HasHistory="{x:Bind ViewModel.HasHistory, Mode=OneWay}" />
 
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                    <Grid RowSpacing="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <Grid RowSpacing="2" RowDefinitions="Auto, Auto, Auto, *">
                         <TextBlock Text="Container storage" Style="{StaticResource CardTitleStyle}" />
                         <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.StorageValue, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock Grid.Row="2" Text="{x:Bind ViewModel.StorageCaption, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
@@ -221,13 +198,7 @@
                             <HyperlinkButton Padding="2,0" Content="Go to containers" Tag="containers" Click="OnStatCardClick" />
                         </StackPanel>
                     </Grid>
-                    <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.HasTopContainers, Mode=OneWay}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="1.4*" />
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.HasTopContainers, Mode=OneWay}" ColumnDefinitions="2*, 2*, 1.2*, 1.4*">
                         <TextBlock Text="NAME" Style="{StaticResource ColumnHeaderStyle}" />
                         <TextBlock Grid.Column="1" Text="IMAGE" Style="{StaticResource ColumnHeaderStyle}" />
                         <TextBlock Grid.Column="2" Text="CPU" Style="{StaticResource ColumnHeaderStyle}" />
@@ -236,13 +207,7 @@
                     <ItemsControl ItemsSource="{x:Bind ViewModel.TopContainers}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:ContainerUsage">
-                                <Grid ColumnSpacing="12" Padding="0,3">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="1.2*" />
-                                        <ColumnDefinition Width="1.4*" />
-                                    </Grid.ColumnDefinitions>
+                                <Grid ColumnSpacing="12" Padding="0,3" ColumnDefinitions="2*, 2*, 1.2*, 1.4*">
                                     <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Grid.Column="1" Text="{x:Bind Image}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

@@ -7,17 +7,8 @@
     xmlns:local="using:WslcDesktop.Controls">
 
     <Border Style="{StaticResource CardStyle}" Padding="0">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <Grid Padding="16,12,8,8" ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+        <Grid RowDefinitions="Auto, *">
+            <Grid Padding="16,12,8,8" ColumnSpacing="8" ColumnDefinitions="*, Auto">
                 <StackPanel>
                     <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"

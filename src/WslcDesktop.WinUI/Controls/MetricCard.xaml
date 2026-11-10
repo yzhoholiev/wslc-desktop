@@ -8,13 +8,7 @@
     xmlns:vm="using:WslcDesktop.ViewModels">
 
     <Border Style="{StaticResource CardStyle}">
-        <Grid RowSpacing="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <Grid RowSpacing="2" RowDefinitions="Auto, Auto, Auto, *">
             <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource CardTitleStyle}" />
             <TextBlock Grid.Row="1" Text="{x:Bind Value, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
             <TextBlock Grid.Row="2" Text="{x:Bind Caption, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"

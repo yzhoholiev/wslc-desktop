@@ -7,22 +7,14 @@
     xmlns:local="using:WslcDesktop.Controls"
     Style="{StaticResource CardButtonStyle}">
 
-    <Grid ColumnSpacing="14">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <Grid ColumnSpacing="14" ColumnDefinitions="Auto, *">
         <Border Width="40" Height="40" CornerRadius="8" VerticalAlignment="Top" Background="{x:Bind BadgeBackground, Mode=OneWay}">
             <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" FontSize="18" Foreground="{x:Bind BadgeBrush, Mode=OneWay}" />
         </Border>
         <StackPanel Grid.Column="1" Spacing="2">
             <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource CardTitleStyle}" />
             <local:AnimatedNumber Value="{x:Bind Value, Mode=OneWay}" TextStyle="{StaticResource TitleTextBlockStyle}" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <Grid ColumnDefinitions="Auto, *">
                 <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center" Style="{x:Bind DotStyle, Mode=OneWay}"
                          Visibility="{x:Bind ShowDot, Mode=OneWay}" />
                 <TextBlock Grid.Column="1" Text="{x:Bind Detail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"

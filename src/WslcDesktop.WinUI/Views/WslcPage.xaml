@@ -24,12 +24,7 @@
 
             <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
 
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
+            <Grid ColumnSpacing="12" ColumnDefinitions="3*, 2*">
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Session VM" Style="{StaticResource CardTitleStyle}" />
@@ -60,13 +55,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Container sessions" Style="{StaticResource CardTitleStyle}" />
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="60" />
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="120" />
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnSpacing="12" ColumnDefinitions="60, 2*, 120, 120">
                         <controls:SortHeader Text="ID" Key="id" Sort="{x:Bind ViewModel.SessionSort}" />
                         <controls:SortHeader Grid.Column="1" Text="NAME" Key="name" Sort="{x:Bind ViewModel.SessionSort}" />
                         <controls:SortHeader Grid.Column="2" Text="CREATOR PID" Key="pid" Sort="{x:Bind ViewModel.SessionSort}" />
@@ -75,13 +64,7 @@
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Sessions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:WslcSessionItem">
-                                <Grid ColumnSpacing="12" Height="40">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="60" />
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
+                                <Grid ColumnSpacing="12" Height="40" ColumnDefinitions="60, 2*, 120, 120">
                                     <TextBlock Text="{x:Bind Id}" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="{x:Bind Name}" VerticalAlignment="Center"
                                                Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />

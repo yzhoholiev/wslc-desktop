@@ -11,14 +11,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="RowTemplate" x:DataType="vm:ImageItem">
-            <controls:ClickableRow Height="56" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="110" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="88" />
-                </Grid.ColumnDefinitions>
+            <controls:ClickableRow Height="56" ColumnSpacing="12" ColumnDefinitions="3*, 110, 1.2*, 1.2*, 88">
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="{x:Bind Repository}" TextTrimming="CharacterEllipsis"
@@ -95,14 +88,7 @@
             </StackPanel>
         </views:ResourceListView.Toolbar>
         <views:ResourceListView.ColumnHeaders>
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="110" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="88" />
-                </Grid.ColumnDefinitions>
+            <Grid ColumnSpacing="12" ColumnDefinitions="3*, 110, 1.2*, 1.2*, 88">
                 <controls:SortHeader Text="IMAGE" Key="image" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="1" Text="SIZE" Key="size" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="2" Text="CREATED" Key="created" Sort="{x:Bind ViewModel.Sort}" />
