@@ -26,6 +26,8 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
+    <!-- Opt-in XAML performance changes, applied by XamlGeneratedMain before XAML starts -->
+    <EnabledXamlOptionalChanges>DefaultStyleOptimizations,IconNoGridOptimization,OptimizeApplyStyles,DeferContextFlyoutInit</EnabledXamlOptionalChanges>
   </PropertyGroup>
 
   <!-- Native AOT -->

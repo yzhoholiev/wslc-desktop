@@ -125,6 +125,7 @@ These fail only in the published AOT build, often with misleading errors:
 - Sizes of memory and disk use IEC units through `ByteSize` (KiB, MiB, GiB).
 - Segoe Fluent Icons glyphs used from code are named `\uXXXX` constants in `Glyphs.cs`; XAML writes them as `&#xXXXX;`. Never raw private-use characters.
 - Grid rows and columns use the compact form (`RowDefinitions="Auto, *"`); the element form only where a definition needs a minimum, a maximum or a binding.
+- The WinUI project opts into the XAML optional changes in `EnabledXamlOptionalChanges`; with `OptimizeApplyStyles`, `ContentDialog` shows no entrance animation on Windows App SDK 2.6.5.
 - Templates that use `x:Bind` and are shared by pages live in `Views/Templates.xaml` (a dictionary with a class behind it); `App.xaml` cannot hold them.
 - User-facing text: plain, sentence case, says what happens; destructive actions confirm first.
 
