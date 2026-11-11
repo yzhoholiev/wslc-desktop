@@ -4,6 +4,10 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+### Changed
+
+- **Published ports show the hand cursor**, like other links.
+
 ## [1.1.0] - 2026-11-11
 
 ### Added

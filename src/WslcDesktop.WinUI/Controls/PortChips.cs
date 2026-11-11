@@ -49,7 +49,7 @@ public sealed partial class PortChips : StackPanel
             };
         }
 
-        var chip = new Button
+        var chip = new LinkButton
         {
             HorizontalAlignment = HorizontalAlignment.Left,
             Style = Resource<Style>("ChipButtonStyle"),
