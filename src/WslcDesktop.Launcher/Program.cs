@@ -91,26 +91,41 @@ internal static class Program
             ?? throw new InvalidDataException("This build does not contain the application payload.");
 
         string target = Path.Combine(versionsRoot, PayloadVersion(payload));
-        if (File.Exists(Path.Combine(target, CompleteMarker)))
+        if (IsUnpacked(target))
         {
             return target;
         }
 
         // Unpack beside the target and move it into place, so a crash never leaves a half-written version that looks complete.
         string staging = $"{target}.{Guid.NewGuid():N}{TemporarySuffix}";
-        payload.Position = 0;
-        ZipFile.ExtractToDirectory(payload, staging);
-        File.WriteAllText(Path.Combine(staging, CompleteMarker), "");
-
-        // Under the unpack lock, a target without a completion marker can only be the remains of a crashed launch.
-        if (Directory.Exists(target))
+        try
         {
-            Directory.Delete(target, true);
-        }
+            payload.Position = 0;
+            ZipFile.ExtractToDirectory(payload, staging);
+            File.WriteAllText(Path.Combine(staging, CompleteMarker), "");
 
-        MoveIntoPlace(staging, target);
-        return target;
+            // Under the unpack lock, a target that is not unpacked can only be the remains of a crashed launch or a damaged copy.
+            if (Directory.Exists(target))
+            {
+                Directory.Delete(target, true);
+            }
+
+            MoveIntoPlace(staging, target);
+            return target;
+        }
+        catch
+        {
+            // Each failed launch would otherwise leave another partial copy of the app, e.g. on a full disk.
+            TryDelete(staging);
+            throw;
+        }
     }
+
+    /// <summary>
+    ///     Whether the version was unpacked completely and still has its executable, which a scanner may have removed since.
+    /// </summary>
+    private static bool IsUnpacked(string directory) =>
+        File.Exists(Path.Combine(directory, CompleteMarker)) && File.Exists(Path.Combine(directory, AppExecutable));
 
     private static void MoveIntoPlace(string staging, string target)
     {
