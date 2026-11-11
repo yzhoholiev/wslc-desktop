@@ -6,7 +6,9 @@ using WslcDesktop.ViewModels;
 // x:Bind hands ItemsSource collections to WinUI as object, so CsWinRT cannot discover these
 // generic instantiations itself; without dynamic code, an undeclared one fails with E_INVALIDARG.
 [assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<KeyValueEntry>))]
-[assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<ContainerUsage>))]
+[assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<UsageBar>))]
+[assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<EndpointRow>))]
+[assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<AttentionItem>))]
 [assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<ContainerItem>))]
 [assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<ImageItem>))]
 [assembly: GeneratedWinRTExposedExternalType(typeof(ObservableCollection<VolumeItem>))]

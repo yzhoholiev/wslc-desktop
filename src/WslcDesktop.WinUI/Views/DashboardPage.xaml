@@ -8,10 +8,29 @@
     xmlns:vm="using:WslcDesktop.ViewModels"
     Background="Transparent">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Padding="32,24,32,96" Spacing="16">
+    <Page.Resources>
+        <DataTemplate x:Key="AttentionItemTemplate" x:DataType="vm:AttentionItem">
+            <Grid ColumnSpacing="10" Padding="0,4" ColumnDefinitions="Auto, Auto, *, Auto">
+                <Ellipse Width="8" Height="8" VerticalAlignment="Center" Style="{x:Bind vm:Bindings.ToneDotStyle(Tone)}" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Text="{x:Bind Subject}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{x:Bind Text}" />
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                    <Button Content="{x:Bind PrimaryAction}" Tag="{x:Bind}" Click="OnAttentionPrimaryClick" />
+                    <Button Content="{x:Bind SecondaryAction}" Tag="{x:Bind}" Click="OnAttentionSecondaryClick"
+                            Visibility="{x:Bind vm:Bindings.VisibleWhenAny(SecondaryAction)}" />
+                    <Button Style="{StaticResource RowActionButtonStyle}" Tag="{x:Bind}" Click="OnAttentionDismissClick"
+                            ToolTipService.ToolTip="Dismiss" AutomationProperties.Name="Dismiss" Visibility="{x:Bind CanDismiss}">
+                        <FontIcon Glyph="&#xE711;" FontSize="12" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
 
-            <Grid>
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="PageContent" Padding="24,16,24,20" RowDefinitions="Auto, Auto, Auto, *">
+
+            <Grid Margin="0,0,0,12">
                 <StackPanel Spacing="4">
                     <TextBlock Text="Dashboard" Style="{StaticResource TitleTextBlockStyle}" />
                     <Grid ColumnSpacing="8" ColumnDefinitions="Auto, *">
@@ -89,17 +108,11 @@
                 </StackPanel>
             </Grid>
 
-            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <ProgressBar Grid.Row="1" Margin="0,0,0,8" IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
 
             <InfoBar
-                IsOpen="{x:Bind ViewModel.IsStopped, Mode=OneWay}"
-                Visibility="{x:Bind ViewModel.IsStopped, Mode=OneWay}"
-                IsClosable="False"
-                Severity="Informational"
-                Title="Container runtime stopped"
-                Message="No wslc session is running, so the VM is not using any resources." />
-
-            <InfoBar
+                Grid.Row="2"
+                Margin="0,0,0,12"
                 IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
                 Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
                 IsClosable="False"
@@ -119,120 +132,315 @@
                     Margin="0,0,0,8" />
             </InfoBar>
 
-            <!-- Inventory -->
-            <Grid ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
-                <controls:StatCard Title="Containers" Glyph="&#xE7B8;" Tag="containers" Click="OnStatCardClick" AutomationProperties.Name="Open containers"
-                                   BadgeBrush="{ThemeResource ContainersBadgeBrush}" BadgeBackground="{ThemeResource ContainersBadgeBackgroundBrush}"
-                                   Value="{x:Bind ViewModel.ContainersCount, Mode=OneWay}" Detail="{x:Bind ViewModel.ContainersDetail, Mode=OneWay}"
-                                   ShowDot="True" DotStyle="{x:Bind vm:Bindings.RuntimeDotStyle(ViewModel.HasRunningContainers), Mode=OneWay}" />
-                <controls:StatCard Grid.Column="1" Title="Images" Glyph="&#xE8B9;" Tag="images" Click="OnStatCardClick" AutomationProperties.Name="Open images"
-                                   BadgeBrush="{ThemeResource ImagesBadgeBrush}" BadgeBackground="{ThemeResource ImagesBadgeBackgroundBrush}"
-                                   Value="{x:Bind ViewModel.ImagesCount, Mode=OneWay}" Detail="{x:Bind ViewModel.ImagesDetail, Mode=OneWay}" />
-                <controls:StatCard Grid.Column="2" Title="Volumes" Glyph="&#xEDA2;" Tag="volumes" Click="OnStatCardClick"
-                                   AutomationProperties.Name="Open volumes"
-                                   BadgeBrush="{ThemeResource VolumesBadgeBrush}" BadgeBackground="{ThemeResource VolumesBadgeBackgroundBrush}"
-                                   Value="{x:Bind ViewModel.VolumesCount, Mode=OneWay}" Detail="{x:Bind ViewModel.VolumesDetail, Mode=OneWay}" />
-                <controls:StatCard Grid.Column="3" Title="Networks" Glyph="&#xE968;" Tag="networks" Click="OnStatCardClick"
-                                   AutomationProperties.Name="Open networks"
-                                   BadgeBrush="{ThemeResource NetworksBadgeBrush}" BadgeBackground="{ThemeResource NetworksBadgeBackgroundBrush}"
-                                   Value="{x:Bind ViewModel.NetworksCount, Mode=OneWay}" Detail="{x:Bind ViewModel.NetworksDetail, Mode=OneWay}" />
-            </Grid>
-
-            <TextBlock Text="Container VM resources" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
-            <Grid ColumnSpacing="12" ColumnDefinitions="*, *, *">
-                <controls:MetricCard Title="CPU" Value="{x:Bind ViewModel.CpuValue, Mode=OneWay}"
-                                     Caption="{x:Bind ViewModel.CpuCaption, Mode=OneWay}" History="{x:Bind ViewModel.CpuHistory, Mode=OneWay}"
-                                     HasHistory="{x:Bind ViewModel.HasHistory, Mode=OneWay}" />
-
-                <controls:MetricCard Grid.Column="1" Title="Memory" Value="{x:Bind ViewModel.MemoryValue, Mode=OneWay}"
-                                     Caption="{x:Bind ViewModel.MemoryCaption, Mode=OneWay}" History="{x:Bind ViewModel.MemoryHistory, Mode=OneWay}"
-                                     HasHistory="{x:Bind ViewModel.HasHistory, Mode=OneWay}" />
-
-                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                    <Grid RowSpacing="2" RowDefinitions="Auto, Auto, Auto, *">
-                        <TextBlock Text="Container storage" Style="{StaticResource CardTitleStyle}" />
-                        <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.StorageValue, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
-                        <TextBlock Grid.Row="2" Text="{x:Bind ViewModel.StorageCaption, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                        <StackPanel Grid.Row="3" Margin="0,10,0,0" Spacing="8" VerticalAlignment="Bottom"
-                                    Visibility="{x:Bind ViewModel.HasStorage, Mode=OneWay}">
-                            <Border Height="10" CornerRadius="5" Background="{ThemeResource ControlStrongFillColorDisabledBrush}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(ViewModel.StorageImagesShare), Mode=OneWay}" />
-                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(ViewModel.StorageImagesShare), Mode=OneWay}" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border CornerRadius="5,0,0,5" Background="{ThemeResource ImagesBadgeBrush}" />
-                                </Grid>
-                            </Border>
-                            <Grid>
-                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center"
-                                                   Fill="{ThemeResource ImagesBadgeBrush}" />
-                                        <TextBlock Text="Images" Style="{StaticResource CaptionTextBlockStyle}"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Spacing="6" ToolTipService.ToolTip="Containers, volumes and build cache">
-                                        <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center"
-                                                   Fill="{ThemeResource ControlStrongFillColorDisabledBrush}" />
-                                        <TextBlock Text="Other" Style="{StaticResource CaptionTextBlockStyle}"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <HyperlinkButton HorizontalAlignment="Right" Padding="4,0" Content="Clean up…" Click="OnCleanupClick"
-                                                 IsEnabled="{x:Bind vm:Bindings.CanAct(ViewModel.IsRunning, ViewModel.IsBusy), Mode=OneWay}" />
-                            </Grid>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="8">
-                    <Grid>
-                        <TextBlock Text="Busiest containers" Style="{StaticResource CardTitleStyle}" VerticalAlignment="Center" />
-                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="4"
-                                    Visibility="{x:Bind vm:Bindings.CollapsedWhen(ViewModel.HasTopContainers), Mode=OneWay}">
-                            <TextBlock Text="No running containers ·" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                            <HyperlinkButton Padding="2,0" Content="Go to containers" Tag="containers" Click="OnStatCardClick" />
-                        </StackPanel>
-                    </Grid>
-                    <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.HasTopContainers, Mode=OneWay}" ColumnDefinitions="2*, 2*, 1.2*, 1.4*">
-                        <TextBlock Text="NAME" Style="{StaticResource ColumnHeaderStyle}" />
-                        <TextBlock Grid.Column="1" Text="IMAGE" Style="{StaticResource ColumnHeaderStyle}" />
-                        <TextBlock Grid.Column="2" Text="CPU" Style="{StaticResource ColumnHeaderStyle}" />
-                        <TextBlock Grid.Column="3" Text="MEMORY" Style="{StaticResource ColumnHeaderStyle}" />
-                    </Grid>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.TopContainers}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:ContainerUsage">
-                                <Grid ColumnSpacing="12" Padding="0,3" ColumnDefinitions="2*, 2*, 1.2*, 1.4*">
-                                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind Image}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <Grid Grid.Column="2" Height="24">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(CpuShare)}" />
-                                            <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(CpuShare)}" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border CornerRadius="4" Background="{ThemeResource AccentFillColorDefaultBrush}" Opacity="0.28" />
-                                        <TextBlock Grid.ColumnSpan="2" Margin="6,0" VerticalAlignment="Center" Text="{x:Bind Cpu}" />
-                                    </Grid>
-                                    <Grid Grid.Column="3" Height="24">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(MemoryShare)}" />
-                                            <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(MemoryShare)}" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border CornerRadius="4" Background="{ThemeResource VolumesBadgeBrush}" Opacity="0.28" />
-                                        <TextBlock Grid.ColumnSpan="2" Margin="6,0" VerticalAlignment="Center" Text="{x:Bind Memory}" />
-                                    </Grid>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+            <!-- Before the first sample -->
+            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40" Visibility="{x:Bind ViewModel.IsConnecting, Mode=OneWay}">
+                <StackPanel Spacing="12" HorizontalAlignment="Center">
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsConnecting, Mode=OneWay}" Width="28" Height="28" />
+                    <TextBlock Text="Connecting to wslc…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
             </Border>
-        </StackPanel>
+
+            <!-- Runtime stopped -->
+            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,48" Visibility="{x:Bind ViewModel.IsStopped, Mode=OneWay}">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE7E8;" FontSize="36" Style="{StaticResource TertiaryIconStyle}" />
+                    <TextBlock Text="The container runtime is stopped" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"
+                               Margin="0,8,0,0" />
+                    <TextBlock Text="No wslc session is running, so the VM uses no memory or CPU. Containers, images and volumes are kept."
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                    <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,14,0,0"
+                            Command="{x:Bind ViewModel.StartRuntimeCommand}" IsEnabled="{x:Bind vm:Bindings.Not(ViewModel.IsBusy), Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE768;" FontSize="14" />
+                            <TextBlock Text="Start runtime" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Running, with nothing pulled or created yet -->
+            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40" Visibility="{x:Bind ViewModel.IsFirstRun, Mode=OneWay}">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <TextBlock Text="Nothing here yet" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
+                    <TextBlock Text="Pull an image, then run a container from it." Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               HorizontalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,14,0,0">
+                        <TextBox x:Name="FirstImageBox" Width="280" PlaceholderText="Image to pull, e.g. nginx:alpine" KeyDown="OnFirstImageKeyDown" />
+                        <Button Style="{StaticResource AccentButtonStyle}" Click="OnFirstPullClick" AutomationProperties.Name="Pull">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="14" />
+                                <TextBlock Text="Pull" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <TextBlock Text="Try" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <HyperlinkButton Padding="4,0" Content="nginx:alpine" Click="OnSuggestedImageClick" />
+                        <HyperlinkButton Padding="4,0" Content="redis:7" Click="OnSuggestedImageClick" />
+                        <HyperlinkButton Padding="4,0" Content="postgres:17" Click="OnSuggestedImageClick" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="3" RowDefinitions="Auto, Auto, *" Visibility="{x:Bind ViewModel.HasOverview, Mode=OneWay}">
+                <!-- Attention, shown only while there is something to report -->
+                <StackPanel Margin="0,0,0,12" Visibility="{x:Bind ViewModel.HasAttention, Mode=OneWay}">
+                    <Border Style="{x:Bind vm:Bindings.BannerStyle(ViewModel.AttentionTone), Mode=OneWay}">
+                        <Grid>
+                            <!-- A single item is shown itself, with its actions -->
+                            <ContentControl Content="{x:Bind ViewModel.SingleAttention, Mode=OneWay}" ContentTemplate="{StaticResource AttentionItemTemplate}"
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" />
+                            <Grid ColumnSpacing="10" ColumnDefinitions="Auto, Auto, *, Auto" Visibility="{x:Bind ViewModel.HasAttentionList, Mode=OneWay}">
+                                <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                         Style="{x:Bind vm:Bindings.ToneDotStyle(ViewModel.AttentionTone), Mode=OneWay}" />
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Text="{x:Bind ViewModel.AttentionTitle, Mode=OneWay}" />
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           Text="{x:Bind ViewModel.AttentionSummary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                    <Button Content="Dismiss all" Command="{x:Bind ViewModel.DismissAllCommand}" />
+                                    <Button Content="{x:Bind ViewModel.AttentionToggleText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleAttentionCommand}" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Padding="16,6,8,8" Margin="0,4,0,0"
+                            Visibility="{x:Bind ViewModel.IsAttentionListVisible, Mode=OneWay}">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.AttentionItems}" ItemTemplate="{StaticResource AttentionItemTemplate}" />
+                            <HyperlinkButton Padding="0,4" Content="{x:Bind ViewModel.MoreAttentionText, Mode=OneWay}" Tag="containers" Click="OnStatCardClick"
+                                             Visibility="{x:Bind vm:Bindings.VisibleWhenAny(ViewModel.MoreAttentionText), Mode=OneWay}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Counts -->
+                <Grid Grid.Row="1" Margin="0,0,0,12" ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
+                    <Button Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="containers" Click="OnStatCardClick"
+                            AutomationProperties.Name="Open containers">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="36" Height="36" CornerRadius="8" VerticalAlignment="Center" Background="{ThemeResource ContainersBadgeBackgroundBrush}">
+                                <FontIcon Glyph="&#xE7B8;" FontSize="16" Foreground="{ThemeResource ContainersBadgeBrush}" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Containers" Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind ViewModel.ContainersCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.ContainersText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
+                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="1" Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="images" Click="OnStatCardClick"
+                            AutomationProperties.Name="Open images">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="36" Height="36" CornerRadius="8" VerticalAlignment="Center" Background="{ThemeResource ImagesBadgeBackgroundBrush}">
+                                <FontIcon Glyph="&#xE8B9;" FontSize="16" Foreground="{ThemeResource ImagesBadgeBrush}" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Images" Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind ViewModel.ImagesCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.ImagesText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
+                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="volumes" Click="OnStatCardClick"
+                            AutomationProperties.Name="Open volumes">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="36" Height="36" CornerRadius="8" VerticalAlignment="Center" Background="{ThemeResource VolumesBadgeBackgroundBrush}">
+                                <FontIcon Glyph="&#xEDA2;" FontSize="16" Foreground="{ThemeResource VolumesBadgeBrush}" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Volumes" Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind ViewModel.VolumesCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.VolumesText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
+                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3" Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="networks" Click="OnStatCardClick"
+                            AutomationProperties.Name="Open networks">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="36" Height="36" CornerRadius="8" VerticalAlignment="Center" Background="{ThemeResource NetworksBadgeBackgroundBrush}">
+                                <FontIcon Glyph="&#xE968;" FontSize="16" Foreground="{ThemeResource NetworksBadgeBrush}" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Networks" Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind ViewModel.NetworksCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                    <TextBlock Text="{x:Bind ViewModel.NetworksText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
+                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- The cards below take the rest of the window, so the chart grows with it -->
+                <Grid Grid.Row="2" ColumnSpacing="12" ColumnDefinitions="1.7*, *">
+                    <!-- Resources -->
+                    <Border Style="{StaticResource CardStyle}">
+                        <Grid RowSpacing="10" RowDefinitions="Auto, Auto, *, Auto, Auto">
+                            <Grid>
+                                <TextBlock Text="Resources" Style="{StaticResource CardTitleStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.VmSummary, Mode=OneWay}" HorizontalAlignment="Right"
+                                           Style="{StaticResource TertiaryCaptionStyle}" />
+                            </Grid>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="24">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center" Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+                                    <TextBlock Text="CPU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.CpuValue, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind ViewModel.CpuCaption, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center" Fill="{ThemeResource VolumesBadgeBrush}" />
+                                    <TextBlock Text="Memory" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.MemoryValue, Mode=OneWay}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind ViewModel.MemoryCaption, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                            <Grid Grid.Row="2" MinHeight="150">
+                                <controls:Sparkline Values="{x:Bind ViewModel.CpuHistory, Mode=OneWay}"
+                                                    SecondaryValues="{x:Bind ViewModel.MemoryHistory, Mode=OneWay}"
+                                                    SecondaryTotal="{x:Bind ViewModel.MemoryTotal, Mode=OneWay}"
+                                                    Visibility="{x:Bind ViewModel.HasHistory, Mode=OneWay}" />
+                                <TextBlock Text="Collecting samples…" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Style="{StaticResource TertiaryCaptionStyle}"
+                                           Visibility="{x:Bind vm:Bindings.CollapsedWhen(ViewModel.HasHistory), Mode=OneWay}" />
+                            </Grid>
+                            <Grid Grid.Row="3" ColumnSpacing="24" ColumnDefinitions="*, *" Visibility="{x:Bind ViewModel.HasTopContainers, Mode=OneWay}">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="TOP CPU" Style="{StaticResource ColumnHeaderStyle}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.TopCpu}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:UsageBar">
+                                            <Grid ColumnSpacing="12" Padding="0,4" ColumnDefinitions="*, 72, 72">
+                                                <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <Grid Grid.Column="1" Height="6" VerticalAlignment="Center">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(Share)}" />
+                                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(Share)}" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.ColumnSpan="2" CornerRadius="3" Background="{ThemeResource ControlStrongFillColorDisabledBrush}" />
+                                                    <Border CornerRadius="3" Background="{ThemeResource AccentFillColorDefaultBrush}" />
+                                                </Grid>
+                                                <TextBlock Grid.Column="2" Text="{x:Bind Value}" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2">
+                                <TextBlock Text="TOP MEMORY" Style="{StaticResource ColumnHeaderStyle}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.TopMemory}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:UsageBar">
+                                            <Grid ColumnSpacing="12" Padding="0,4" ColumnDefinitions="*, 72, 72">
+                                                <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <Grid Grid.Column="1" Height="6" VerticalAlignment="Center">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(Share)}" />
+                                                        <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(Share)}" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.ColumnSpan="2" CornerRadius="3" Background="{ThemeResource ControlStrongFillColorDisabledBrush}" />
+                                                    <Border CornerRadius="3" Background="{ThemeResource VolumesBadgeBrush}" />
+                                                </Grid>
+                                                <TextBlock Grid.Column="2" Text="{x:Bind Value}" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            </Grid>
+                            <TextBlock Grid.Row="4" Text="No running containers, so nothing to rank." Style="{StaticResource TertiaryTextStyle}"
+                                       Visibility="{x:Bind vm:Bindings.CollapsedWhen(ViewModel.HasTopContainers), Mode=OneWay}" />
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Column="1" RowSpacing="12" RowDefinitions="*, Auto">
+                        <!-- Reachable now -->
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Reachable now" Style="{StaticResource CardTitleStyle}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.Endpoints}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:EndpointRow">
+                                            <Grid ColumnSpacing="12" Padding="0,4" ColumnDefinitions="*, Auto">
+                                                <HyperlinkButton Style="{StaticResource LinkTextButtonStyle}" Tag="{x:Bind Id}" Click="OnEndpointContainerClick"
+                                                                 ToolTipService.ToolTip="Show container">
+                                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                                </HyperlinkButton>
+                                                <controls:PortChips Grid.Column="1" Ports="{x:Bind Ports}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <HyperlinkButton Padding="0,4" Content="{x:Bind ViewModel.MoreEndpointsText, Mode=OneWay}" Tag="containers" Click="OnStatCardClick"
+                                                 Visibility="{x:Bind vm:Bindings.VisibleWhenAny(ViewModel.MoreEndpointsText), Mode=OneWay}" />
+                                <TextBlock Text="No running container publishes a port." Style="{StaticResource TertiaryTextStyle}"
+                                           Visibility="{x:Bind vm:Bindings.CollapsedWhen(ViewModel.HasEndpoints), Mode=OneWay}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Storage -->
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                            <StackPanel Spacing="8">
+                                <Grid>
+                                    <TextBlock Text="Storage" Style="{StaticResource CardTitleStyle}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.StorageValue, Mode=OneWay}" HorizontalAlignment="Right"
+                                               Style="{StaticResource SubtitleTextBlockStyle}" />
+                                </Grid>
+                                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasStorage, Mode=OneWay}">
+                                    <Border Height="10" CornerRadius="5" Background="{ThemeResource ControlStrongFillColorDisabledBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(ViewModel.StorageImagesShare), Mode=OneWay}" />
+                                                <ColumnDefinition Width="{x:Bind vm:Bindings.Remaining(ViewModel.StorageImagesShare), Mode=OneWay}" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border CornerRadius="5,0,0,5" Background="{ThemeResource ImagesBadgeBrush}" />
+                                        </Grid>
+                                    </Border>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center" Fill="{ThemeResource ImagesBadgeBrush}" />
+                                            <TextBlock Text="Images" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.StorageImagesText, Mode=OneWay}" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto" ToolTipService.ToolTip="Containers, volumes and build cache">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Rectangle Width="8" Height="8" RadiusX="2" RadiusY="2" VerticalAlignment="Center"
+                                                       Fill="{ThemeResource ControlStrongFillColorDisabledBrush}" />
+                                            <TextBlock Text="Containers, volumes and other" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.StorageOtherText, Mode=OneWay}" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="{x:Bind ViewModel.StorageCaption, Mode=OneWay}" VerticalAlignment="Center"
+                                                   Style="{StaticResource TertiaryTextStyle}" />
+                                        <HyperlinkButton Grid.Column="1" Padding="4,0" Content="Clean up…" Click="OnCleanupClick"
+                                                         IsEnabled="{x:Bind vm:Bindings.CanAct(ViewModel.IsRunning, ViewModel.IsBusy), Mode=OneWay}" />
+                                    </Grid>
+                                </StackPanel>
+                                <TextBlock Text="Storage use is not available right now." Style="{StaticResource TertiaryTextStyle}"
+                                           Visibility="{x:Bind vm:Bindings.CollapsedWhen(ViewModel.HasStorage), Mode=OneWay}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
     </ScrollViewer>
 </Page>

@@ -162,6 +162,29 @@
                 <Setter Property="StrokeLineJoin" Value="Round" />
             </Style>
 
+            <Style x:Key="ChartSecondaryLineStyle" TargetType="Polyline">
+                <Setter Property="Stroke" Value="{ThemeResource VolumesBadgeBrush}" />
+                <Setter Property="StrokeThickness" Value="2" />
+                <Setter Property="StrokeLineJoin" Value="Round" />
+            </Style>
+
+            <Style x:Key="BannerStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="16,8,8,8" />
+                <Setter Property="MinHeight" Value="48" />
+            </Style>
+
+            <Style x:Key="CautionBannerStyle" TargetType="Border" BasedOn="{StaticResource BannerStyle}">
+                <Setter Property="Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            </Style>
+
+            <Style x:Key="CriticalBannerStyle" TargetType="Border" BasedOn="{StaticResource BannerStyle}">
+                <Setter Property="Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            </Style>
+
             <Style x:Key="ChartMarkerStyle" TargetType="Ellipse">
                 <Setter Property="Fill" Value="{ThemeResource AccentFillColorDefaultBrush}" />
             </Style>

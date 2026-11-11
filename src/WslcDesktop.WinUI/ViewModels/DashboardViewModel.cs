@@ -10,19 +10,58 @@ public sealed partial class DashboardViewModel : PageViewModel
 {
     private const int MinimumGraphSamples = 3;
 
+    /// <summary>
+    ///     The banner's list shows this many containers; the Containers page has the rest.
+    /// </summary>
+    private const int MaxAttentionContainers = 4;
+
+    private const int MaxEndpoints = 5;
+    private const int TopCount = 3;
+    private const string GraphWindow = "last 3 minutes";
+
+    private AttentionItem[] _attention = [];
+
     public DashboardViewModel(AppServices services)
         : base(services)
     {
         StatusText = "Connecting to wslc…";
+        IsAttentionOpen = services.Settings.Current.IsAttentionOpen;
     }
 
-    public ObservableCollection<ContainerUsage> TopContainers { get; } = [];
+    /// <summary>
+    ///     The rows of the opened attention banner.
+    /// </summary>
+    public ObservableCollection<AttentionItem> AttentionItems { get; } = [];
+
+    public ObservableCollection<UsageBar> TopCpu { get; } = [];
+
+    public ObservableCollection<UsageBar> TopMemory { get; } = [];
+
+    public ObservableCollection<EndpointRow> Endpoints { get; } = [];
 
     [ObservableProperty]
     public partial bool IsRunning { get; set; }
 
     [ObservableProperty]
     public partial bool IsStopped { get; set; }
+
+    /// <summary>
+    ///     Whether nothing is known about the runtime yet.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsConnecting { get; set; } = true;
+
+    /// <summary>
+    ///     Whether the runtime runs without any image or container, which shows how to get the first one in place of empty cards.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFirstRun { get; set; }
+
+    /// <summary>
+    ///     Whether the banner, counts and resource cards show.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasOverview { get; set; }
 
     [ObservableProperty]
     public partial string StatusText { get; set; }
@@ -39,29 +78,80 @@ public sealed partial class DashboardViewModel : PageViewModel
     [ObservableProperty]
     public partial string ErrorTitle { get; set; } = "";
 
+    /// <summary>
+    ///     Whether anything needs attention; the banner shows only then, so that its appearing is the signal.
+    /// </summary>
     [ObservableProperty]
-    public partial int ContainersCount { get; set; } = -1;
+    public partial bool HasAttention { get; set; }
+
+    /// <summary>
+    ///     The tone of the worst attention item, which names the banner's styles.
+    /// </summary>
+    [ObservableProperty]
+    public partial string AttentionTone { get; set; } = "Caution";
 
     [ObservableProperty]
-    public partial string ContainersDetail { get; set; } = "";
+    public partial string AttentionTitle { get; set; } = "";
 
     [ObservableProperty]
-    public partial int ImagesCount { get; set; } = -1;
+    public partial string AttentionSummary { get; set; } = "";
+
+    /// <summary>
+    ///     The only attention item, which the banner then shows itself in place of a summary.
+    /// </summary>
+    [ObservableProperty]
+    public partial AttentionItem? SingleAttention { get; set; }
+
+    /// <summary>
+    ///     Whether there are several attention items, which the banner summarizes and lists on request.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAttentionListVisible))]
+    public partial bool HasAttentionList { get; set; }
 
     [ObservableProperty]
-    public partial string ImagesDetail { get; set; } = "";
+    [NotifyPropertyChangedFor(nameof(AttentionToggleText), nameof(IsAttentionListVisible))]
+    public partial bool IsAttentionOpen { get; set; }
+
+    public bool IsAttentionListVisible => HasAttentionList && IsAttentionOpen;
+
+    /// <summary>
+    ///     Says how many failed containers the list leaves to the Containers page, or nothing.
+    /// </summary>
+    [ObservableProperty]
+    public partial string MoreAttentionText { get; set; } = "";
+
+    public string AttentionToggleText => IsAttentionOpen ? "Hide" : "Show";
 
     [ObservableProperty]
-    public partial int VolumesCount { get; set; } = -1;
+    public partial string ContainersCount { get; set; } = "0";
 
     [ObservableProperty]
-    public partial string VolumesDetail { get; set; } = "";
+    public partial string ContainersText { get; set; } = "";
 
     [ObservableProperty]
-    public partial int NetworksCount { get; set; } = -1;
+    public partial string ImagesCount { get; set; } = "0";
 
     [ObservableProperty]
-    public partial string NetworksDetail { get; set; } = "";
+    public partial string ImagesText { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string VolumesCount { get; set; } = "0";
+
+    [ObservableProperty]
+    public partial string VolumesText { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string NetworksCount { get; set; } = "0";
+
+    [ObservableProperty]
+    public partial string NetworksText { get; set; } = "";
+
+    /// <summary>
+    ///     The VM's size and load, and the time the graph covers.
+    /// </summary>
+    [ObservableProperty]
+    public partial string VmSummary { get; set; } = GraphWindow;
 
     [ObservableProperty]
     public partial string CpuValue { get; set; } = "–";
@@ -81,11 +171,23 @@ public sealed partial class DashboardViewModel : PageViewModel
     [ObservableProperty]
     public partial double[] MemoryHistory { get; set; } = [];
 
+    /// <summary>
+    ///     The VM's memory in bytes, which turns the graph's memory scale from percent into a size.
+    /// </summary>
+    [ObservableProperty]
+    public partial double MemoryTotal { get; set; }
+
     [ObservableProperty]
     public partial string StorageValue { get; set; } = "–";
 
     [ObservableProperty]
     public partial string StorageCaption { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string StorageImagesText { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string StorageOtherText { get; set; } = "";
 
     /// <summary>
     ///     How much of the used container storage the images take, from 0 to 1.
@@ -97,7 +199,7 @@ public sealed partial class DashboardViewModel : PageViewModel
     public partial bool HasStorage { get; set; }
 
     /// <summary>
-    ///     Whether the graphs have enough samples to draw a line rather than a dot.
+    ///     Whether the graph has enough samples to draw a line rather than a dot.
     /// </summary>
     [ObservableProperty]
     public partial bool HasHistory { get; set; }
@@ -108,6 +210,17 @@ public sealed partial class DashboardViewModel : PageViewModel
     [ObservableProperty]
     public partial bool HasTopContainers { get; set; }
 
+    [ObservableProperty]
+    public partial bool HasEndpoints { get; set; }
+
+    /// <summary>
+    ///     Says how many publishing containers the card leaves to the Containers page, or nothing.
+    /// </summary>
+    [ObservableProperty]
+    public partial string MoreEndpointsText { get; set; } = "";
+
+    private Dictionary<string, long> Dismissed => Services.Settings.Current.DismissedAttention;
+
     public void Apply(RuntimeSnapshot snapshot)
     {
         RuntimeMonitor monitor = Services.Monitor;
@@ -115,6 +228,7 @@ public sealed partial class DashboardViewModel : PageViewModel
         UpdateBusy();
         IsRunning = snapshot.IsRunning;
         IsStopped = snapshot.Info is not null && !snapshot.IsRunning;
+        IsConnecting = snapshot.Info is null && snapshot.Error is null;
         ErrorText = snapshot.Error;
         HasError = snapshot.Error is not null;
         IsWslcMissing = snapshot.IsWslcMissing;
@@ -133,15 +247,24 @@ public sealed partial class DashboardViewModel : PageViewModel
             (false, _) => $"Session {Wslc.DefaultSessionName} is stopped. Also running, with separate containers: {string.Join(", ", otherSessions)}."
         };
 
-        ApplyInventory(snapshot);
+        IsFirstRun = snapshot is { IsRunning: true, Containers.Count: 0, Inventory.Images: 0 };
+        HasOverview = snapshot.IsRunning && !IsFirstRun;
 
+        ApplyInventory(snapshot);
         ApplyVm(snapshot.Vm);
         CpuHistory = monitor.CpuHistory;
         MemoryHistory = monitor.MemoryHistory;
         HasHistory = CpuHistory.Length >= MinimumGraphSamples;
         ApplyStorage(snapshot);
-
         ApplyTopContainers(snapshot);
+        ApplyEndpoints(snapshot);
+
+        if (snapshot.IsRunning && DashboardAttention.Forget(snapshot, Dismissed))
+        {
+            Services.Settings.Save();
+        }
+
+        ApplyAttention(snapshot);
     }
 
     [RelayCommand]
@@ -161,6 +284,31 @@ public sealed partial class DashboardViewModel : PageViewModel
 
     [RelayCommand]
     private void OpenWslcDocumentation() => Services.Shell.OpenUrl(Wslc.DocumentationUrl);
+
+    [RelayCommand]
+    private void ToggleAttention()
+    {
+        IsAttentionOpen = !IsAttentionOpen;
+        Services.Settings.Current.IsAttentionOpen = IsAttentionOpen;
+        Services.Settings.Save();
+    }
+
+    /// <summary>
+    ///     Hides an attention item until it happens again or grows.
+    /// </summary>
+    public void Dismiss(AttentionItem item) => Dismiss(new[] { item });
+
+    [RelayCommand]
+    private void DismissAll() => Dismiss(_attention);
+
+    /// <summary>
+    ///     Starts a failed container again, or stops one that keeps restarting.
+    /// </summary>
+    public Task StartOrStopAsync(AttentionItem item)
+    {
+        UserOperation operation = Services.Containers.StartOrStop(item.ContainerId, item.Subject, item.Kind == AttentionKind.ContainerRestarting);
+        return RunAndReloadAsync(operation.Description, operation.Run, operation.SuccessMessage);
+    }
 
     public Task ShutdownWslAsync() => RunOperationAsync("Shutting down WSL", Services.Actions.ShutdownWslAsync, "WSL has been shut down.");
 
@@ -195,20 +343,54 @@ public sealed partial class DashboardViewModel : PageViewModel
             }
         });
 
+    private void Dismiss(AttentionItem[] items)
+    {
+        foreach (AttentionItem item in items.Where(item => item.CanDismiss))
+        {
+            Dismissed[item.Key] = item.Value;
+        }
+
+        Services.Settings.Save();
+        ApplyAttention(Services.Monitor.Latest);
+    }
+
+    private void ApplyAttention(RuntimeSnapshot snapshot)
+    {
+        _attention = snapshot.IsRunning ? DashboardAttention.Build(snapshot, Dismissed) : [];
+        SingleAttention = _attention.Length == 1 ? _attention[0] : null;
+        HasAttentionList = _attention.Length > 1;
+
+        List<AttentionItem> containers = [.. _attention.Where(item => item.Kind != AttentionKind.UnusedImages)];
+        AttentionItem[] shown = [.. containers.Take(MaxAttentionContainers), .. _attention.Where(item => item.Kind == AttentionKind.UnusedImages)];
+        AttentionItems.ReplaceWith(shown);
+        int more = containers.Count - MaxAttentionContainers;
+        MoreAttentionText = more > 0 ? $"{Humanize.Count(more, "more container")} · show them on the Containers page" : "";
+
+        HasAttention = _attention.Length > 0;
+        AttentionTone = _attention.Any(item => item.Tone == "Critical") ? "Critical" : "Caution";
+        AttentionTitle = $"{_attention.Length} things need attention";
+        AttentionSummary = DashboardAttention.Summarize(_attention);
+    }
+
     private void ApplyVm(VmMetrics? vm)
     {
         if (vm is null)
         {
             CpuValue = MemoryValue = "–";
             CpuCaption = MemoryCaption = "";
+            VmSummary = GraphWindow;
             return;
         }
 
+        double[] cpu = Services.Monitor.CpuHistory;
         CpuValue = $"{vm.CpuPercent:0.0}%";
-        CpuCaption = $"{vm.VirtualCpus} vCPUs · load {vm.LoadAverage}";
-        MemoryValue = $"{vm.MemoryPercent:0.0}%";
-        string swap = vm.SwapTotal > 0 ? $"swap {ByteSize.Format(vm.SwapUsed)} of {ByteSize.Format(vm.SwapTotal)}" : "no swap";
-        MemoryCaption = $"{ByteSize.Format(vm.MemoryUsed)} of {ByteSize.Format(vm.MemoryTotal)} · {swap}";
+        CpuCaption = cpu.Length > 0 ? $"peak {cpu.Max():0.0}%" : "";
+        MemoryValue = ByteSize.Format(vm.MemoryUsed);
+        MemoryTotal = vm.MemoryTotal;
+        string swap = vm.SwapTotal > 0 ? $"swap {ByteSize.Format(vm.SwapUsed)}" : "no swap";
+        MemoryCaption = $"of {ByteSize.Format(vm.MemoryTotal)} · {swap}";
+        string load = vm.LoadAverage.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "–";
+        VmSummary = $"{vm.VirtualCpus} vCPUs · {ByteSize.Format(vm.MemoryTotal)} · load {load} · {GraphWindow}";
     }
 
     private void ApplyStorage(RuntimeSnapshot snapshot)
@@ -217,19 +399,18 @@ public sealed partial class DashboardViewModel : PageViewModel
         if (snapshot.Storage is not { } storage)
         {
             StorageValue = "–";
-            StorageCaption = "";
+            StorageCaption = StorageImagesText = StorageOtherText = "";
             StorageImagesShare = 0;
             return;
         }
 
-        long images = snapshot.Inventory?.ImagesSize ?? 0;
+        long images = Math.Min(snapshot.Inventory?.ImagesSize ?? 0, storage.Used);
         long unused = snapshot.Inventory?.UnusedImagesSize ?? 0;
-        StorageValue = $"{ByteSize.Format(storage.Used)} used";
-        StorageCaption = unused > 0
-            ? $"Images {ByteSize.Format(images)} · {ByteSize.Format(unused)} in unused images"
-            : $"Images {ByteSize.Format(images)}";
-
-        StorageImagesShare = storage.Used == 0 ? 0 : Math.Min(1, (double)images / storage.Used);
+        StorageValue = ByteSize.Format(storage.Used);
+        StorageCaption = unused > 0 ? $"{ByteSize.Format(unused)} reclaimable" : "Nothing to reclaim";
+        StorageImagesText = ByteSize.Format(images);
+        StorageOtherText = ByteSize.Format(storage.Used - images);
+        StorageImagesShare = storage.Used == 0 ? 0 : (double)images / storage.Used;
     }
 
     private static string FormatUptime(TimeSpan uptime) => uptime switch
@@ -242,59 +423,71 @@ public sealed partial class DashboardViewModel : PageViewModel
 
     private void ApplyInventory(RuntimeSnapshot snapshot)
     {
-        if (!snapshot.IsRunning)
+        int running = snapshot.RunningContainers;
+        int containers = snapshot.Containers.Count;
+        HasRunningContainers = snapshot.IsRunning && running > 0;
+        (ContainersCount, ContainersText) = containers == 0 ? ("0", "") : ($"{running}", $"of {containers} running");
+
+        if (snapshot.Inventory is not { } inventory)
         {
-            HasRunningContainers = false;
-            ContainersCount = ImagesCount = VolumesCount = NetworksCount = -1;
-            ContainersDetail = ImagesDetail = VolumesDetail = NetworksDetail = "";
             return;
         }
 
-        int running = snapshot.RunningContainers;
-        HasRunningContainers = running > 0;
-        ContainersCount = snapshot.Containers.Count;
-        ContainersDetail = $"{running} running · {snapshot.Containers.Count - running} stopped";
-
-        if (snapshot.Inventory is { } inventory)
-        {
-            ImagesCount = inventory.Images;
-            ImagesDetail = $"{ByteSize.Format(inventory.ImagesSize)} · {inventory.UnusedImages} unused";
-            VolumesCount = inventory.Volumes;
-            VolumesDetail = $"{inventory.Volumes - inventory.AnonymousVolumes} named · {inventory.AnonymousVolumes} anonymous";
-            NetworksCount = inventory.Networks;
-            NetworksDetail = $"{inventory.CustomNetworks} user-defined · {inventory.Networks - inventory.CustomNetworks} built-in";
-        }
+        ImagesCount = $"{inventory.Images}";
+        ImagesText = inventory.Images == 0 ? "" : ByteSize.Format(inventory.ImagesSize);
+        VolumesCount = $"{inventory.Volumes}";
+        VolumesText = inventory.AnonymousVolumes > 0 ? $"{inventory.AnonymousVolumes} anonymous" : "";
+        NetworksCount = $"{inventory.Networks}";
+        NetworksText = inventory.CustomNetworks > 0 ? $"{inventory.CustomNetworks} user-defined" : "built-in";
     }
 
     private void ApplyTopContainers(RuntimeSnapshot snapshot)
     {
-        var busiest = snapshot.Containers
+        var usage = snapshot.Containers
             .Select(container => (Container: container, Stats: snapshot.Stats.GetValueOrDefault(container.Id)))
             .Where(pair => pair.Stats is not null)
             .Select(pair => (
-                pair.Container,
-                pair.Stats,
-                Cpu: ByteSize.ParsePercent(pair.Stats!.CpuPerc),
+                Name: pair.Container.Names,
+                CpuText: pair.Stats!.CpuPerc,
+                Cpu: ByteSize.ParsePercent(pair.Stats.CpuPerc),
+                MemoryText: ByteSize.Normalize(pair.Stats.MemUsed),
                 Memory: ByteSize.Parse(pair.Stats.MemUsed)))
-            .OrderByDescending(usage => usage.Cpu)
-            .ThenByDescending(usage => usage.Memory)
-            .Take(6)
             .ToList();
 
         // Scaling CPU against at least one full core keeps a nearly idle top container from showing a full bar.
-        double cpuScale = Math.Max(100, busiest.Select(usage => usage.Cpu).DefaultIfEmpty().Max());
-        long memoryScale = Math.Max(1, busiest.Select(usage => usage.Memory).DefaultIfEmpty().Max());
-        var top = busiest
-            .Select(usage => new ContainerUsage(
-                usage.Container.Names,
-                usage.Container.Image,
-                usage.Stats!.CpuPerc,
-                usage.Cpu / cpuScale,
-                ByteSize.Normalize(usage.Stats.MemUsed),
-                (double)usage.Memory / memoryScale))
-            .ToList();
+        double cpuScale = Math.Max(100, usage.Select(item => item.Cpu).DefaultIfEmpty().Max());
+        long memoryScale = Math.Max(1, usage.Select(item => item.Memory).DefaultIfEmpty().Max());
 
-        TopContainers.ReplaceWith(top);
-        HasTopContainers = TopContainers.Count > 0;
+        TopCpu.ReplaceWith(usage
+            .OrderByDescending(item => item.Cpu)
+            .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(TopCount)
+            .Select(item => new UsageBar(item.Name, item.CpuText, item.Cpu / cpuScale))
+            .ToArray());
+
+        TopMemory.ReplaceWith(usage
+            .OrderByDescending(item => item.Memory)
+            .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(TopCount)
+            .Select(item => new UsageBar(item.Name, item.MemoryText, (double)item.Memory / memoryScale))
+            .ToArray());
+
+        HasTopContainers = TopCpu.Count > 0;
+    }
+
+    private void ApplyEndpoints(RuntimeSnapshot snapshot)
+    {
+        List<EndpointRow> publishing =
+        [
+            .. snapshot.Containers
+                .Where(container => container.IsRunning && PublishedPort.ParseList(container.Ports).Any(port => port.HostPort is not null))
+                .OrderBy(container => container.Names, StringComparer.OrdinalIgnoreCase)
+                .Select(container => new EndpointRow(container.Id, container.Names, container.Ports))
+        ];
+
+        Endpoints.ReplaceWith(publishing.Take(MaxEndpoints).ToArray());
+        HasEndpoints = publishing.Count > 0;
+        int more = publishing.Count - MaxEndpoints;
+        MoreEndpointsText = more > 0 ? $"{Humanize.Count(more, "more container")} · Containers" : "";
     }
 }

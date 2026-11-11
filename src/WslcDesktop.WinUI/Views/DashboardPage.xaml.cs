@@ -1,4 +1,7 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 using WslcDesktop.Controls;
 using WslcDesktop.Models;
 using WslcDesktop.Services;
@@ -8,6 +11,8 @@ namespace WslcDesktop.Views;
 
 public sealed partial class DashboardPage
 {
+    private static readonly CleanupOptions UnusedImagesOnly = new(false, false, false, true, true, false, false);
+
     private readonly AppServices _services;
 
     public DashboardPage(AppServices services)
@@ -17,6 +22,9 @@ public sealed partial class DashboardPage
         InitializeComponent();
         this.FollowMonitor(services.Monitor, OnRuntimeUpdated);
         Loaded += (_, _) => OnRuntimeUpdated();
+
+        // A ScrollViewer gives its content unbounded height; this lets the last row fill the window and still scroll when it is short.
+        Scroller.SizeChanged += (_, e) => PageContent.MinHeight = e.NewSize.Height;
     }
 
     public DashboardViewModel ViewModel { get; }
@@ -32,18 +40,29 @@ public sealed partial class DashboardPage
         }
     }
 
-    public async Task CleanupAsync()
+    public Task CleanupAsync() => CleanupAsync(null);
+
+    /// <summary>
+    ///     Asks what to clean up and does it.
+    /// </summary>
+    /// <param name="preset">What the dialog starts with for a cleanup of one kind of thing; the choice made last time otherwise.</param>
+    private async Task CleanupAsync(CleanupOptions? preset)
     {
         if (!await WhenReadyAsync())
         {
             return;
         }
 
-        CleanupOptions? previous = _services.Settings.Current.LastCleanup;
-        if (await CleanupDialog.ChooseAsync(XamlRoot, ViewModel.GetCleanupSummary(), previous) is { HasAny: true } options)
+        CleanupOptions? initial = preset ?? _services.Settings.Current.LastCleanup;
+        if (await CleanupDialog.ChooseAsync(XamlRoot, ViewModel.GetCleanupSummary(), initial) is { HasAny: true } options)
         {
-            _services.Settings.Current.LastCleanup = options;
-            _services.Settings.Save();
+            // A cleanup narrowed to one kind is not what the user wants offered next time.
+            if (preset is null)
+            {
+                _services.Settings.Current.LastCleanup = options;
+                _services.Settings.Save();
+            }
+
             await ViewModel.CleanupAsync(options);
         }
     }
@@ -104,4 +123,52 @@ public sealed partial class DashboardPage
     private async void OnCleanupClick(object sender, RoutedEventArgs e) => await CleanupAsync();
 
     private void OnStatCardClick(object sender, RoutedEventArgs e) => App.Window.ShowPage((string)((FrameworkElement)sender).Tag);
+
+    private void OnEndpointContainerClick(object sender, RoutedEventArgs e) => App.Window.ShowContainer(sender.TagOf<string>());
+
+    private async void OnAttentionPrimaryClick(object sender, RoutedEventArgs e) => await RunPrimaryAsync(sender.TagOf<AttentionItem>());
+
+    private async void OnAttentionSecondaryClick(object sender, RoutedEventArgs e) => await ViewModel.StartOrStopAsync(sender.TagOf<AttentionItem>());
+
+    private void OnAttentionDismissClick(object sender, RoutedEventArgs e) => ViewModel.Dismiss(sender.TagOf<AttentionItem>());
+
+    /// <summary>
+    ///     Opens the logs of the container an item is about, or the cleanup dialog for reclaimable space.
+    /// </summary>
+    private Task RunPrimaryAsync(AttentionItem item)
+    {
+        if (item.Kind == AttentionKind.UnusedImages)
+        {
+            return CleanupAsync(UnusedImagesOnly);
+        }
+
+        App.Window.ShowContainer(item.ContainerId);
+        return Task.CompletedTask;
+    }
+
+    private void OnSuggestedImageClick(object sender, RoutedEventArgs e) => FirstImageBox.Text = (string)((HyperlinkButton)sender).Content;
+
+    private void OnFirstImageKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            PullFirstImage();
+            e.Handled = true;
+        }
+    }
+
+    private void OnFirstPullClick(object sender, RoutedEventArgs e) => PullFirstImage();
+
+    /// <summary>
+    ///     Hands the image to the Images page, which pulls it and shows the progress and the result.
+    /// </summary>
+    private void PullFirstImage()
+    {
+        ImagesViewModel images = ((ImagesPage)App.Window.ShowPage("images")).ViewModel;
+        images.PullReference = FirstImageBox.Text;
+        if (images.PullCommand.CanExecute(null))
+        {
+            images.PullCommand.Execute(null);
+        }
+    }
 }

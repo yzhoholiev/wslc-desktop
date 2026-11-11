@@ -25,9 +25,16 @@ public static class Bindings
 
     public static string StartStopGlyph(bool isRunning) => isRunning ? Glyphs.Stop : Glyphs.Start;
 
-    public static Style StateDotStyle(string state) => (Style)Application.Current.Resources[StateTone(state) + "DotStyle"];
+    public static Style StateDotStyle(string state) => ToneDotStyle(StateTone(state));
 
     public static Style StatePillStyle(string state) => (Style)Application.Current.Resources[StateTone(state) + "PillStyle"];
+
+    /// <summary>
+    ///     The dot of a tone such as "Success" or "Critical".
+    /// </summary>
+    public static Style ToneDotStyle(string tone) => (Style)Application.Current.Resources[tone + "DotStyle"];
+
+    public static Style BannerStyle(string tone) => (Style)Application.Current.Resources[tone + "BannerStyle"];
 
     public static Style RuntimeDotStyle(bool isRunning) => StateDotStyle(isRunning ? "running" : "exited");
 

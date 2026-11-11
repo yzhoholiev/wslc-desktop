@@ -31,6 +31,17 @@ public sealed class AppSettings
     public CleanupOptions? LastCleanup { get; set; }
 
     public WindowPlacement? Window { get; set; }
+
+    /// <summary>
+    ///     Dashboard attention items the user dismissed, each with the amount it had then; an item returns once it exceeds that.
+    /// </summary>
+    [AllowNull]
+    public Dictionary<string, long> DismissedAttention { get; set => field = value ?? []; } = [];
+
+    /// <summary>
+    ///     Whether the dashboard's attention banner lists its items.
+    /// </summary>
+    public bool IsAttentionOpen { get; set; }
 }
 
 public static class BackdropNames
