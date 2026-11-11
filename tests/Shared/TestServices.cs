@@ -124,6 +124,8 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
 
     public string CreatedId { get; set; } = "created-id";
 
+    public Exception? TerminateFailure { get; set; }
+
     public Task StartContainerAsync(string id) => Record($"start {id}");
 
     public Task StopContainerAsync(string id) => Record($"stop {id}");
@@ -158,7 +160,8 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
 
     public Task StartDefaultSessionAsync() => Record("session-start");
 
-    public Task TerminateSessionAsync(string session, TimeSpan? timeout = null) => Record($"session-terminate {session}");
+    public Task TerminateSessionAsync(string session, TimeSpan? timeout = null) =>
+        TerminateFailure is { } failure ? Task.FromException(failure) : Record($"session-terminate {session}");
 
     public Task OpenSettingsAsync() => Record("settings");
 

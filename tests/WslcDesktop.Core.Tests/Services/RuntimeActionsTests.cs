@@ -138,6 +138,17 @@ public sealed class RuntimeActionsTests
     }
 
     [Fact]
+    public async Task StopRuntimeOnExitAsync_DoesNotThrowWhenWslcCannotBeStarted()
+    {
+        _test.Services.Monitor.Publish(Running());
+        _test.Commands.TerminateFailure = new InvalidOperationException("The process could not be started.");
+
+        await Actions.StopRuntimeOnExitAsync();
+
+        Assert.Equal(1, _test.Session.Disconnects);
+    }
+
+    [Fact]
     public async Task ShutdownWslAsync_ShutsDownWslAndRefreshes()
     {
         await Actions.ShutdownWslAsync();

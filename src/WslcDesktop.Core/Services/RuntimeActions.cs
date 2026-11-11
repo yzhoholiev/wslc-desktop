@@ -129,11 +129,12 @@ public sealed class RuntimeActions(
 
         try
         {
-            session.Disconnect();
+            await Task.Run(session.Disconnect);
             await commands.TerminateSessionAsync(Wslc.DefaultSessionName, ExitStopTimeout);
         }
-        catch (CliException ex)
+        catch (Exception ex)
         {
+            // Whatever fails here, the app is closing: its caller has already hidden the window.
             CrashLog.Write(ex);
         }
     }

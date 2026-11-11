@@ -96,18 +96,22 @@ public sealed partial class MainWindow
         }
 
         _isExiting = true;
-
-        // A programmatic Close() does not raise AppWindow.Closing, where placement is otherwise saved.
-        SavePlacement();
-        if (!keepRuntime && Services.Settings.Current.StopRuntimeOnExit)
+        try
         {
-            AppWindow.Hide();
-            _tray.SetTooltip($"{AppIdentity.Name} · Stopping the container runtime…");
-            await Services.Actions.StopRuntimeOnExitAsync();
+            // A programmatic Close() does not raise AppWindow.Closing, where placement is otherwise saved.
+            SavePlacement();
+            if (!keepRuntime && Services.Settings.Current.StopRuntimeOnExit)
+            {
+                AppWindow.Hide();
+                _tray.SetTooltip($"{AppIdentity.Name} · Stopping the container runtime…");
+                await Services.Actions.StopRuntimeOnExitAsync();
+            }
         }
-
-        Close();
-        Application.Current.Exit();
+        finally
+        {
+            Close();
+            Application.Current.Exit();
+        }
     }
 
     private void OnClosing(AppWindow sender, AppWindowClosingEventArgs args)

@@ -130,7 +130,10 @@ public sealed partial class MainWindow
         ShowCount(ImagesBadge, snapshot.IsRunning ? snapshot.Inventory?.Images ?? 0 : 0);
         ShowCount(VolumesBadge, snapshot.IsRunning ? snapshot.Inventory?.Volumes ?? 0 : 0);
         ShowCount(NetworksBadge, snapshot.IsRunning ? snapshot.Inventory?.Networks ?? 0 : 0);
-        _tray.SetTooltip($"{AppIdentity.Name} · {status}");
+        if (!_isExiting)
+        {
+            _tray.SetTooltip($"{AppIdentity.Name} · {status}");
+        }
     }
 
     public void ApplyBackdrop(string name) => SystemBackdrop = name switch
