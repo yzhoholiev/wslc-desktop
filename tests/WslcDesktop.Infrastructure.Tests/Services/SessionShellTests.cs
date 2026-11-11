@@ -9,11 +9,18 @@ public sealed class SessionShellTests : IDisposable
 {
     private static readonly string Sh = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "sh.exe");
 
-    private readonly SessionShell _shell = new("test-session", TimeSpan.FromSeconds(2), () => Cli.CreateStartInfo(Sh, []));
+    /// <summary>
+    ///     Long enough for a busy build agent to start sh for the first time, which has taken more than two seconds.
+    /// </summary>
+    private static readonly TimeSpan Patient = TimeSpan.FromSeconds(30);
+
+    private readonly SessionShell _shell = Shell(Patient);
 
     public SessionShellTests() => Assert.SkipUnless(File.Exists(Sh), "Git for Windows is not installed.");
 
     public void Dispose() => _shell.Dispose();
+
+    private static SessionShell Shell(TimeSpan commandTimeout) => new("test-session", commandTimeout, () => Cli.CreateStartInfo(Sh, []));
 
     [Fact]
     public async Task ExecuteAsync_ReturnsTheOutputAndExitCode()
@@ -37,11 +44,13 @@ public sealed class SessionShellTests : IDisposable
     [Fact]
     public async Task ExecuteAsync_EndsAHungCommandAndStartsAFreshShell()
     {
+        using SessionShell impatient = Shell(TimeSpan.FromSeconds(2));
+
         SessionEndedException error = await Assert.ThrowsAsync<SessionEndedException>(() =>
-            _shell.ExecuteAsync("sleep 30", TestContext.Current.CancellationToken));
+            impatient.ExecuteAsync("sleep 30", TestContext.Current.CancellationToken));
         Assert.Contains("did not answer within 2 seconds", error.Message);
 
-        ShellResult next = await _shell.ExecuteAsync("echo back", TestContext.Current.CancellationToken);
+        ShellResult next = await impatient.ExecuteAsync("echo back", TestContext.Current.CancellationToken);
 
         Assert.Equal("back", next.Output.Trim());
     }
