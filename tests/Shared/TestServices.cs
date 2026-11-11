@@ -126,6 +126,11 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
 
     public Exception? TerminateFailure { get; set; }
 
+    /// <summary>
+    ///     Keeps a pull running until it completes.
+    /// </summary>
+    public Task PullCompletion { get; set; } = Task.CompletedTask;
+
     public Task StartContainerAsync(string id) => Record($"start {id}");
 
     public Task StopContainerAsync(string id) => Record($"stop {id}");
@@ -142,7 +147,11 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
         return CreatedId;
     }
 
-    public Task PullImageAsync(string image) => Record($"pull {image}");
+    public async Task PullImageAsync(string image)
+    {
+        await Record($"pull {image}");
+        await PullCompletion;
+    }
 
     public Task RemoveImageAsync(string image, bool force) => Record($"rmi {image}{(force ? " --force" : "")}");
 

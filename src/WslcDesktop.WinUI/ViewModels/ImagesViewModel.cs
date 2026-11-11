@@ -132,7 +132,12 @@ public sealed partial class ImagesViewModel : ResourceListViewModel<ImageItem>
         return RunAndReloadAsync($"Pulling {reference}", async () =>
             {
                 await Services.Commands.PullImageAsync(reference);
-                PullReference = "";
+
+                // The box stays editable during the pull, so it may hold the next reference by now.
+                if (PullReference.Trim() == reference)
+                {
+                    PullReference = "";
+                }
             }, $"Pulled {reference}.");
     }
 

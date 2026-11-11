@@ -38,6 +38,22 @@ public sealed class ImagesViewModelTests
     }
 
     [Fact]
+    public async Task Pull_KeepsAReferenceTypedWhileThePullRan()
+    {
+        _test.Services.Monitor.Publish(Running());
+        var pulling = new TaskCompletionSource();
+        _test.Commands.PullCompletion = pulling.Task;
+        var viewModel = new ImagesViewModel(_test.Services) { PullReference = "nginx:alpine" };
+
+        Task pull = viewModel.PullCommand.ExecuteAsync(null);
+        viewModel.PullReference = "redis:7";
+        pulling.SetResult();
+        await pull;
+
+        Assert.Equal("redis:7", viewModel.PullReference);
+    }
+
+    [Fact]
     public async Task Summary_CountsAnImageWithSeveralTagsOnce()
     {
         _test.Services.Monitor.Publish(Running());
