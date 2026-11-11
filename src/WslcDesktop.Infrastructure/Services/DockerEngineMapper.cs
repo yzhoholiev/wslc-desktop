@@ -41,6 +41,7 @@ internal static class DockerEngineMapper
                 Repository = separator > 0 ? repoTag[..separator] : repoTag,
                 Tag = separator > 0 ? repoTag[(separator + 1)..] : "<none>",
                 Size = ByteSize.Format(image.Size),
+                ExactSize = image.Size,
                 CreatedAt = created.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                 CreatedSince = Humanize.Ago(created),
                 Containers = containers.ToString(CultureInfo.InvariantCulture)

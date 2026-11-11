@@ -63,6 +63,7 @@ public sealed class DockerEngineTests
         Assert.Equal(["nginx:alpine", "nginx:latest", "<none>:<none>"], images.Select(image => $"{image.Repository}:{image.Tag}"));
         Assert.Equal(["1", "1", "0"], images.Select(image => image.Containers));
         Assert.Equal("65.9 MiB", images[0].Size);
+        Assert.Equal(69_100_000, images[0].SizeBytes);
     }
 
     [Fact]

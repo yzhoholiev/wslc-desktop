@@ -62,7 +62,7 @@ public sealed partial class ImagesViewModel : ResourceListViewModel<ImageItem>
     protected override async Task<List<ImageItem>> FetchAsync()
     {
         List<ImageDto> images = await Services.Reader.ListImagesAsync(CancellationToken.None);
-        long largest = Math.Max(1, images.Select(image => ByteSize.Parse(image.Size)).DefaultIfEmpty().Max());
+        long largest = Math.Max(1, images.Select(image => image.SizeBytes).DefaultIfEmpty().Max());
         return [.. images.Select(image => ToItem(image, largest))];
     }
 
@@ -70,7 +70,7 @@ public sealed partial class ImagesViewModel : ResourceListViewModel<ImageItem>
     {
         string reference = image.Tag is "" or "<none>" ? image.Repository : $"{image.Repository}:{image.Tag}";
         string shortId = image.Id.Replace("sha256:", "", StringComparison.Ordinal);
-        long size = ByteSize.Parse(image.Size);
+        long size = image.SizeBytes;
         // Matching names misses containers created from a digest, so it only stands in when wslc reports no count.
         int containerCount = int.TryParse(image.Containers, out int reported)
             ? reported

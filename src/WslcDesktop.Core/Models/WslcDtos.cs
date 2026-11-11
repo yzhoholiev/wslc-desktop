@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WslcDesktop.Services;
 
 namespace WslcDesktop.Models;
 
@@ -60,6 +61,15 @@ public sealed class ImageDto
     public string CreatedAt { get; set; } = "";
     public string CreatedSince { get; set; } = "";
     public string Containers { get; set; } = "";
+
+    /// <summary>
+    ///     Size in bytes as the Docker Engine API reports it; wslc prints only the rounded <see cref="Size" />.
+    /// </summary>
+    [JsonIgnore]
+    public long? ExactSize { get; set; }
+
+    [JsonIgnore]
+    public long SizeBytes => ExactSize ?? ByteSize.Parse(Size);
 }
 
 public sealed class ImageInspectDto

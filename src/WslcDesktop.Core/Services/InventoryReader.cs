@@ -30,13 +30,13 @@ internal sealed class InventoryReader(IRuntimeReader reader)
         var unusedImages = images.Where(image => image.Containers == "0").ToList();
         Current = new Inventory(
             images.Count,
-            images.Sum(image => ByteSize.Parse(image.Size)),
+            images.Sum(image => image.SizeBytes),
             unusedImages.Count,
             volumes.Count,
             volumes.Count(volume => volume.IsAnonymous),
             networks.Count,
             networks.Count(network => !NetworkDto.IsBuiltInName(network.Name)),
-            unusedImages.Sum(image => ByteSize.Parse(image.Size)));
+            unusedImages.Sum(image => image.SizeBytes));
     }
 
     public void Forget()
