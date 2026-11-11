@@ -75,6 +75,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
+            CHANGELOG.md
             LICENSE
             THIRD-PARTY-NOTICES.txt
           sparse-checkout-cone-mode: false
@@ -87,8 +88,16 @@ jobs:
           cp ../LICENSE LICENSE.txt
           cp ../THIRD-PARTY-NOTICES.txt .
         working-directory: dist
+      # The release text is the changelog section of this version; a pre-release, which has none of its own, takes the unreleased one
+      - name: Release notes
+        run: |
+          section() { awk -v title="## [$1]" 'index($0, title) == 1 { found = 1; next } found && /^## \[/ { exit } found' CHANGELOG.md; }
+          section "${GITHUB_REF_NAME#v}" > notes.md
+          grep -q '[^[:space:]]' notes.md || section Unreleased > notes.md
+          grep -q '[^[:space:]]' notes.md || { echo "CHANGELOG.md has no entry for $GITHUB_REF_NAME"; exit 1; }
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           files: dist/*
+          body_path: notes.md
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}

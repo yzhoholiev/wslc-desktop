@@ -144,6 +144,11 @@ These fail only in the published AOT build, often with misleading errors:
 - Before restructuring code whose behaviour is not pinned, add characterization tests in a separate commit, then refactor with them green.
 - Parameterised tests use `TheoryData`/`MemberData` with readable case names; guard tests that enumerate a type's members (as `CreateArguments_MapsEveryOptionProperty`) catch additions that skip a mapping.
 
+## Changelog and releases
+
+- A change that users can notice adds a line to `## [Unreleased]` in `CHANGELOG.md`, under Added, Changed or Fixed, worded for a user of the app rather than as a commit subject.
+- To release, rename that section to the version with its date, add an empty `## [Unreleased]` above it, update the links at the bottom, and tag the commit `vX.Y.Z`. The release job uses that section as the release text and fails when the version has none.
+
 ## Commits
 
 - Short imperative subject, no trailing period, no issue key, and no mention of AI tools.
