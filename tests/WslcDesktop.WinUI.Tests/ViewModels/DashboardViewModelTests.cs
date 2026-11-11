@@ -137,11 +137,11 @@ public sealed class DashboardViewModelTests
         RuntimeSnapshot sample = Running() with { Vm = new VmMetrics(1, 5, 100, 50, 0, 0, "", TimeSpan.Zero) };
 
         _test.Services.Monitor.Publish(sample);
-        _test.Services.Monitor.Publish(sample);
+        _test.Services.Monitor.Publish(sample with { });
         viewModel.Apply(sample);
         Assert.False(viewModel.HasHistory);
 
-        _test.Services.Monitor.Publish(sample);
+        _test.Services.Monitor.Publish(sample with { });
         viewModel.Apply(sample);
         Assert.True(viewModel.HasHistory);
     }

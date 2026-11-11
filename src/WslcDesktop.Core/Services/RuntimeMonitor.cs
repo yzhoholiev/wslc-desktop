@@ -230,6 +230,12 @@ public sealed class RuntimeMonitor : INotifyPropertyChanged
     /// </summary>
     internal void Publish(RuntimeSnapshot snapshot)
     {
+        // The sampler returns the snapshot it was given while the runtime stays stopped, which leaves listeners nothing new.
+        if (ReferenceEquals(snapshot, Latest))
+        {
+            return;
+        }
+
         _history.Record(snapshot);
         if (snapshot is { Vm: null, IsRunning: false })
         {

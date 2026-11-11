@@ -97,6 +97,19 @@ public sealed class RuntimeMonitorTests
         Assert.Equal(expected, RuntimeMonitor.NextPoll(latest, idleTick).ToString());
     }
 
+    [Fact]
+    public void Publish_NotifiesOnceForASnapshotPublishedAgain()
+    {
+        int updates = 0;
+        Monitor.Updated += () => updates++;
+        RuntimeSnapshot stopped = Stopped();
+
+        Monitor.Publish(stopped);
+        Monitor.Publish(stopped);
+
+        Assert.Equal(1, updates);
+    }
+
     private static RuntimeSnapshot WithVm(double cpu, long memoryAvailable) =>
         Running() with { Vm = new VmMetrics(2, cpu, 100, memoryAvailable, 0, 0, "0.00 0.00 0.00", TimeSpan.FromMinutes(1)) };
 }
