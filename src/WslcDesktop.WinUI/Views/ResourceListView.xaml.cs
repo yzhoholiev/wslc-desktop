@@ -1,7 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Windows.System;
 using WslcDesktop.Controls;
 using WslcDesktop.ViewModels;
 
@@ -48,7 +50,13 @@ public sealed partial class ResourceListView
         };
 
         Rows.SizeChanged += OnRowsSizeChanged;
+        KeyDown += OnKeyDown;
     }
+
+    /// <summary>
+    ///     Raised with the selected item when the Delete key is pressed in the list.
+    /// </summary>
+    public event EventHandler<object>? DeleteRequested;
 
     public IResourceListViewModel? List
     {
@@ -189,6 +197,31 @@ public sealed partial class ResourceListView
     }
 
     private void OnDetailsCloseRequested(object? sender, EventArgs e) => List?.CloseDetails();
+
+    private void OnFindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        SearchBox.Focus(FocusState.Keyboard);
+        SearchBox.SelectAll();
+        args.Handled = true;
+    }
+
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape && List is { IsDetailsOpen: true } list)
+        {
+            list.CloseDetails();
+            e.Handled = true;
+        }
+    }
+
+    private void OnRowsKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Delete && List?.SelectedItem is { } selected)
+        {
+            DeleteRequested?.Invoke(this, selected);
+            e.Handled = true;
+        }
+    }
 
     private async void OnEmptyActionClick(object? sender, RoutedEventArgs e)
     {

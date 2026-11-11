@@ -7,15 +7,19 @@
     xmlns:controls="using:WslcDesktop.Controls"
     xmlns:vm="using:WslcDesktop.ViewModels">
 
-    <Grid Padding="32,24,32,24" RowSpacing="16" RowDefinitions="Auto, Auto, Auto, *">
+    <Grid Padding="24,16,24,20" RowSpacing="12" RowDefinitions="Auto, Auto, Auto, *">
         <StackPanel>
             <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock Text="{x:Bind List.Summary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>
 
         <Grid Grid.Row="1" ColumnSpacing="12" ColumnDefinitions="280, *">
-            <TextBox PlaceholderText="{x:Bind SearchPlaceholder, Mode=OneWay}"
-                     Text="{x:Bind List.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox x:Name="SearchBox" PlaceholderText="{x:Bind SearchPlaceholder, Mode=OneWay}"
+                     Text="{x:Bind List.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <TextBox.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="OnFindInvoked" />
+                </TextBox.KeyboardAccelerators>
+            </TextBox>
             <ContentPresenter Grid.Column="1" HorizontalAlignment="Right" Content="{x:Bind Toolbar, Mode=OneWay}" />
         </Grid>
 
@@ -25,7 +29,7 @@
                      Message="{x:Bind List.LoadError, Mode=OneWay}" IsClosable="False" />
         </StackPanel>
 
-        <Grid Grid.Row="3" RowSpacing="16">
+        <Grid Grid.Row="3" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" MinHeight="160" />
                 <RowDefinition Height="Auto" />
@@ -45,6 +49,7 @@
                         SelectionMode="Single"
                         IsItemClickEnabled="True"
                         ItemClick="OnItemClick"
+                        KeyDown="OnRowsKeyDown"
                         SelectionChanged="OnSelectionChanged">
                         <!-- The default add/delete transition fades a row out and in again whenever its item is replaced or moves -->
                         <ListView.ItemContainerTransitions>

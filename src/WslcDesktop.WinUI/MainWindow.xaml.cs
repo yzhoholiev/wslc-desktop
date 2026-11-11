@@ -46,6 +46,7 @@ public sealed partial class MainWindow
         RestorePlacement();
 
         AppTitleBar.Title = AppIdentity.Name;
+        AddPageShortcuts();
         CurrentSideButton.Style = Resource("CurrentSideButtonStyle");
 
         _launchMessages = new WindowMessageHook(_hwnd, Program.ActivateMessage, ex => Services.Notifier.Error("Launch command failed", ex.Message));

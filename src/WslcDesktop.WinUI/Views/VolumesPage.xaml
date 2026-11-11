@@ -11,7 +11,23 @@
 
     <Page.Resources>
         <DataTemplate x:Key="RowTemplate" x:DataType="vm:VolumeItem">
-            <controls:ClickableRow Height="56" ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 48">
+            <controls:ClickableRow Height="48" ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 40">
+                <controls:ClickableRow.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Copy name" Tag="{x:Bind Name}" Click="OnCopyClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE8C8;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Copy mount point" Tag="{x:Bind Mountpoint}" Click="OnCopyClick" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Delete volume" Tag="{x:Bind}" Click="OnRemoveClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74D;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </controls:ClickableRow.ContextFlyout>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis"
                                Style="{StaticResource BodyStrongTextBlockStyle}" ToolTipService.ToolTip="{x:Bind Name}"
@@ -24,17 +40,18 @@
                 <TextBlock Grid.Column="2" Text="{x:Bind Mountpoint}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="12" />
                 <controls:UsageChip Grid.Column="3" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
-                <Button x:Name="RowActions" Grid.Column="4" Tag="{x:Bind}" Click="OnRemoveClick"
-                        Style="{StaticResource RowActionButtonStyle}" ToolTipService.ToolTip="Delete volume"
-                        AutomationProperties.Name="Delete volume">
-                    <FontIcon Glyph="&#xE74D;" FontSize="14" />
-                </Button>
+                <StackPanel x:Name="RowActions" Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="RowMenu" Style="{StaticResource RowActionButtonStyle}" ToolTipService.ToolTip="More actions"
+                            AutomationProperties.Name="More actions">
+                        <FontIcon Glyph="&#xE712;" FontSize="14" />
+                    </Button>
+                </StackPanel>
             </controls:ClickableRow>
         </DataTemplate>
     </Page.Resources>
 
     <views:ResourceListView List="{x:Bind ViewModel}" Title="Volumes" SearchPlaceholder="Search volumes" ErrorTitle="Could not list volumes"
-                            ItemTemplate="{StaticResource RowTemplate}">
+                            ItemTemplate="{StaticResource RowTemplate}" DeleteRequested="OnDeleteRequested">
         <views:ResourceListView.Toolbar>
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <DropDownButton AutomationProperties.Name="Prune">
@@ -51,12 +68,15 @@
                 </DropDownButton>
                 <Button Style="{StaticResource IconButtonStyle}" Command="{x:Bind ViewModel.RefreshCommand}" ToolTipService.ToolTip="Refresh"
                         AutomationProperties.Name="Refresh">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </Button.KeyboardAccelerators>
                     <FontIcon Glyph="&#xE72C;" FontSize="14" />
                 </Button>
             </StackPanel>
         </views:ResourceListView.Toolbar>
         <views:ResourceListView.ColumnHeaders>
-            <Grid ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 48">
+            <Grid ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 40">
                 <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="1" Text="DRIVER" Key="driver" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="2" Text="MOUNTPOINT" Key="mountpoint" Sort="{x:Bind ViewModel.Sort}" />

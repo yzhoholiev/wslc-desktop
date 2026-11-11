@@ -8,6 +8,7 @@ namespace WslcDesktop.Views;
 public sealed partial class VolumesPage
 {
     public VolumesPage(AppServices services)
+        : base(services)
     {
         ViewModel = new VolumesViewModel(services);
         InitializeComponent();
@@ -17,9 +18,12 @@ public sealed partial class VolumesPage
 
     protected override IResourceListViewModel List => ViewModel;
 
-    private async void OnRemoveClick(object sender, RoutedEventArgs e)
+    private async void OnRemoveClick(object sender, RoutedEventArgs e) => await RemoveAsync(sender.TagOf<VolumeItem>());
+
+    private async void OnDeleteRequested(object? sender, object item) => await RemoveAsync((VolumeItem)item);
+
+    private async Task RemoveAsync(VolumeItem item)
     {
-        VolumeItem item = sender.TagOf<VolumeItem>();
         if (await Dialogs.ConfirmAsync(XamlRoot, "Delete volume?", $"Volume '{item.DisplayName}' and all of its data will be deleted.", "Delete"))
         {
             await ViewModel.RemoveAsync(item);

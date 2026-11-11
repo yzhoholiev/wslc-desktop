@@ -42,7 +42,7 @@ public sealed class ImagesViewModelTests
     {
         _test.Services.Monitor.Publish(Running());
         var pulling = new TaskCompletionSource();
-        _test.Commands.PullCompletion = pulling.Task;
+        _test.Commands.Completion = pulling.Task;
         var viewModel = new ImagesViewModel(_test.Services) { PullReference = "nginx:alpine" };
 
         Task pull = viewModel.PullCommand.ExecuteAsync(null);

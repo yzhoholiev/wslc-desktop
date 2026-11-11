@@ -9,11 +9,9 @@ namespace WslcDesktop.Views;
 
 public sealed partial class ImagesPage
 {
-    private readonly AppServices _services;
-
     public ImagesPage(AppServices services)
+        : base(services)
     {
-        _services = services;
         ViewModel = new ImagesViewModel(services);
         InitializeComponent();
     }
@@ -38,7 +36,7 @@ public sealed partial class ImagesPage
         // The page may have left the window while the defaults were read, which leaves the dialog nowhere to open.
         if (await ViewModel.LoadRunDefaultsAsync(sender.TagOf<ImageItem>()) is not { } defaults
             || XamlRoot is not { } root
-            || await RunImageDialog.ShowAsync(root, defaults, _services.Commands.CreateContainerAsync) is not { } created)
+            || await RunImageDialog.ShowAsync(root, defaults, Services.Commands.CreateContainerAsync) is not { } created)
         {
             return;
         }
@@ -52,9 +50,12 @@ public sealed partial class ImagesPage
         await ViewModel.ReportCreatedAsync(defaults, created.Started);
     }
 
-    private async void OnRemoveClick(object sender, RoutedEventArgs e)
+    private async void OnRemoveClick(object sender, RoutedEventArgs e) => await RemoveAsync(sender.TagOf<ImageItem>());
+
+    private async void OnDeleteRequested(object? sender, object item) => await RemoveAsync((ImageItem)item);
+
+    private async Task RemoveAsync(ImageItem item)
     {
-        ImageItem item = sender.TagOf<ImageItem>();
         string message = item.IsUnused
             ? $"'{item.Reference}' will be deleted."
             : $"'{item.Reference}' is used by {Humanize.Count(item.ContainerCount, "container")}. It will be force-deleted anyway.";

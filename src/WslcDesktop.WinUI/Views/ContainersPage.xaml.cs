@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System.ComponentModel;
+using Windows.System;
 using WslcDesktop.Controls;
 using WslcDesktop.Services;
 using WslcDesktop.ViewModels;
@@ -10,6 +12,7 @@ namespace WslcDesktop.Views;
 public sealed partial class ContainersPage
 {
     private readonly AppServices _services;
+    private bool _isRestoringHighlight;
 
     public ContainersPage(AppServices services)
     {
@@ -20,6 +23,8 @@ public sealed partial class ContainersPage
         Loaded += (_, _) => OnRuntimeUpdated();
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         ContainerList.SizeChanged += OnListSizeChanged;
+        ViewModel.Items.CollectionChanged += (_, _) => RestoreHighlight();
+        KeyDown += OnKeyDown;
     }
 
     public ContainersViewModel ViewModel { get; }
@@ -67,6 +72,52 @@ public sealed partial class ContainersPage
         }
     }
 
+    /// <summary>
+    ///     Restores the row highlight, which the ListView drops when a sort or search moves the selected item.
+    /// </summary>
+    private void RestoreHighlight()
+    {
+        // Deferred until the ListView has applied the change itself, and once for a whole reordering.
+        if (_isRestoringHighlight)
+        {
+            return;
+        }
+
+        _isRestoringHighlight = DispatcherQueue.TryEnqueue(() =>
+        {
+            _isRestoringHighlight = false;
+            if (ViewModel.Selected is { } selected && ContainerList.SelectedItem != selected)
+            {
+                ContainerList.SelectedItem = selected;
+            }
+        });
+    }
+
+    private void OnFindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        SearchBox.Focus(FocusState.Keyboard);
+        SearchBox.SelectAll();
+        args.Handled = true;
+    }
+
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape && ViewModel.IsDetailsOpen)
+        {
+            ViewModel.CloseDetails();
+            e.Handled = true;
+        }
+    }
+
+    private async void OnListKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Delete && ViewModel.Selected is { } selected)
+        {
+            e.Handled = true;
+            await RemoveAsync(selected);
+        }
+    }
+
     private void OnLogsSizeChanged(object sender, SizeChangedEventArgs e) =>
         LogsScroller.ChangeView(null, LogsScroller.ScrollableHeight, null, true);
 
@@ -101,11 +152,14 @@ public sealed partial class ContainersPage
 
     private void OnVolumeLinkClick(object? sender, string name) => App.Window.ShowVolume(name);
 
+    private void OnCopyClick(object sender, RoutedEventArgs e) => ClipboardText.Copy(sender.TagOf<string>(), _services.Notifier);
+
     private void OnCopyInspectClick(object sender, RoutedEventArgs e) => ClipboardText.Copy(ViewModel.InspectText, _services.Notifier);
 
-    private async void OnRemoveClick(object sender, RoutedEventArgs e)
+    private async void OnRemoveClick(object sender, RoutedEventArgs e) => await RemoveAsync(sender.TagOf<ContainerItem>());
+
+    private async Task RemoveAsync(ContainerItem item)
     {
-        ContainerItem item = sender.TagOf<ContainerItem>();
         string message = item.IsRunning
             ? $"'{item.Name}' is running. It will be stopped and deleted."
             : $"'{item.Name}' will be deleted.";

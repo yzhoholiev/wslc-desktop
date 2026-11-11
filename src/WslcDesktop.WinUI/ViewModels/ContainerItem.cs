@@ -36,6 +36,12 @@ public sealed partial class ContainerItem(ContainerDto container) : ObservableOb
     [ObservableProperty]
     public partial string Memory { get; set; } = "";
 
+    /// <summary>
+    ///     Whether an operation on this container is running, which its row shows in place of its buttons.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsWorking { get; set; }
+
     public bool IsRunning => State == "running";
 
     /// <summary>

@@ -40,6 +40,44 @@ public sealed class ContainersViewModelTests
     }
 
     [Fact]
+    public void Apply_ReloadsTheDetailsWhenTheSelectedContainerChangesState()
+    {
+        int inspects = 0;
+        _test.Details.ReadInspect = (id, _) => Task.FromResult($"inspect {id} #{++inspects}");
+        var viewModel = new ContainersViewModel(_test.Services);
+        viewModel.Apply(Snapshot);
+        viewModel.Selected = viewModel.Items.Single(item => item.Name == "batch");
+
+        viewModel.Apply(Snapshot);
+        Assert.Equal(1, inspects);
+
+        viewModel.Apply(Running(Container("web"), Container("batch")));
+
+        Assert.Equal(2, inspects);
+        Assert.EndsWith("#2", viewModel.InspectText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task StartOrStop_IgnoresASecondRequestWhileOneRunsOnTheContainer()
+    {
+        _test.Services.Monitor.Publish(Snapshot);
+        var viewModel = new ContainersViewModel(_test.Services);
+        viewModel.Apply(Snapshot);
+        ContainerItem web = viewModel.Items.Single(item => item.Name == "web");
+        var stopping = new TaskCompletionSource();
+        _test.Commands.Completion = stopping.Task;
+
+        Task first = viewModel.StartOrStopAsync(web);
+        Assert.True(web.IsWorking);
+        await viewModel.StartOrStopAsync(web);
+        stopping.SetResult();
+        await first;
+
+        Assert.Single(_test.Commands.Calls);
+        Assert.False(web.IsWorking);
+    }
+
+    [Fact]
     public void SearchAndShowStopped_FilterTheList()
     {
         var viewModel = new ContainersViewModel(_test.Services);

@@ -127,9 +127,9 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
     public Exception? TerminateFailure { get; set; }
 
     /// <summary>
-    ///     Keeps a pull running until it completes.
+    ///     Keeps every command running until it completes.
     /// </summary>
-    public Task PullCompletion { get; set; } = Task.CompletedTask;
+    public Task Completion { get; set; } = Task.CompletedTask;
 
     public Task StartContainerAsync(string id) => Record($"start {id}");
 
@@ -147,11 +147,7 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
         return CreatedId;
     }
 
-    public async Task PullImageAsync(string image)
-    {
-        await Record($"pull {image}");
-        await PullCompletion;
-    }
+    public Task PullImageAsync(string image) => Record($"pull {image}");
 
     public Task RemoveImageAsync(string image, bool force) => Record($"rmi {image}{(force ? " --force" : "")}");
 
@@ -174,11 +170,15 @@ internal sealed class FakeRuntimeCommands : IRuntimeCommands
 
     public Task OpenSettingsAsync() => Record("settings");
 
-    private Task Record(string call)
+    private async Task Record(string call)
     {
         Calls.Add(call);
+        await Completion;
         string verb = call.Split(' ')[0];
-        return Failing.Contains(verb) ? Task.FromException(new CliException($"{verb} failed")) : Task.CompletedTask;
+        if (Failing.Contains(verb))
+        {
+            throw new CliException($"{verb} failed");
+        }
     }
 
     private async Task<string> Prune(string call)

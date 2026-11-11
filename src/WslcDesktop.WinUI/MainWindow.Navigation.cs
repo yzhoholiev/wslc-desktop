@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 using WslcDesktop.Services;
 using WslcDesktop.Views;
 
@@ -36,6 +38,27 @@ public sealed partial class MainWindow
             : Nav.MenuItems.Concat(Nav.FooterMenuItems).OfType<NavigationViewItem>().First(item => (string)item.Tag == tag);
 
         return GetOrCreatePage(tag);
+    }
+
+    /// <summary>
+    ///     Gives the pages Ctrl+1, Ctrl+2 and so on, in the order the navigation pane lists them.
+    /// </summary>
+    private void AddPageShortcuts()
+    {
+        Nav.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
+        int number = 0;
+        foreach (NavigationViewItem item in Nav.MenuItems.Concat(Nav.FooterMenuItems).OfType<NavigationViewItem>())
+        {
+            string tag = (string)item.Tag;
+            var shortcut = new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = VirtualKey.Number1 + number++ };
+            shortcut.Invoked += (_, args) =>
+            {
+                ShowPage(tag);
+                args.Handled = true;
+            };
+
+            Nav.KeyboardAccelerators.Add(shortcut);
+        }
     }
 
     private DashboardPage ShowDashboard() => (DashboardPage)ShowPage("dashboard");

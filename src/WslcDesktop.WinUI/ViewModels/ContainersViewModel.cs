@@ -23,6 +23,7 @@ public sealed partial class ContainersViewModel : ListViewModel<ContainerItem>
     private bool _hasSnapshot;
     private bool _isRuntimeStopped;
     private string? _pendingSelection;
+    private string? _selectedState;
 
     public ContainersViewModel(AppServices services)
         : base(services, "containers", "status", Columns)
@@ -81,6 +82,12 @@ public sealed partial class ContainersViewModel : ListViewModel<ContainerItem>
         {
             Selected = null;
         }
+        else if (Selected is { } selected && selected.State != _selectedState && _detailsLoad is { } load)
+        {
+            // A start or stop, from here or elsewhere, leaves the pane with the logs and state of the previous run.
+            _selectedState = selected.State;
+            _ = LoadDetailsAsync(selected, load.Token);
+        }
         else
         {
             Logs.OnContainersUpdated();
@@ -100,11 +107,11 @@ public sealed partial class ContainersViewModel : ListViewModel<ContainerItem>
         return Task.CompletedTask;
     }
 
-    public Task StartOrStopAsync(ContainerItem item) => RunContainerOperationAsync(Services.Containers.StartOrStop(item.Id, item.Name, item.IsRunning));
+    public Task StartOrStopAsync(ContainerItem item) => RunOnAsync(item, Services.Containers.StartOrStop(item.Id, item.Name, item.IsRunning));
 
-    public Task RestartAsync(ContainerItem item) => RunContainerOperationAsync(Services.Containers.Restart(item.Id, item.Name));
+    public Task RestartAsync(ContainerItem item) => RunOnAsync(item, Services.Containers.Restart(item.Id, item.Name));
 
-    public Task RemoveAsync(ContainerItem item) => RunContainerOperationAsync(Services.Containers.Remove(item.Id, item.Name));
+    public Task RemoveAsync(ContainerItem item) => RunOnAsync(item, Services.Containers.Remove(item.Id, item.Name));
 
     public Task PruneAsync() =>
         RunContainerOperationAsync(new UserOperation("Removing stopped containers", Services.Commands.PruneContainersAsync, "Stopped containers removed."));
@@ -166,16 +173,36 @@ public sealed partial class ContainersViewModel : ListViewModel<ContainerItem>
         Logs.Show(item, _detailsLoad.Token);
         previous?.Cancel();
         InspectText = "";
+        _selectedState = item?.State;
         if (item is not null)
         {
             _ = LoadDetailsAsync(item, _detailsLoad.Token);
         }
     }
 
-    private async Task LoadDetailsAsync(ContainerItem item, CancellationToken ct)
+    private Task LoadDetailsAsync(ContainerItem item, CancellationToken ct) => Task.WhenAll(
+        Logs.LoadAsync(item),
+        PaneText.LoadAsync(() => Services.Details.InspectAsync(item.Id, ct), () => !ct.IsCancellationRequested, text => InspectText = text));
+
+    /// <summary>
+    ///     Runs an operation on one container unless one is already running on it.
+    /// </summary>
+    private async Task RunOnAsync(ContainerItem item, UserOperation operation)
     {
-        await Logs.LoadAsync(item);
-        await PaneText.LoadAsync(() => Services.Details.InspectAsync(item.Id, ct), () => !ct.IsCancellationRequested, text => InspectText = text);
+        if (item.IsWorking)
+        {
+            return;
+        }
+
+        item.IsWorking = true;
+        try
+        {
+            await RunContainerOperationAsync(operation);
+        }
+        finally
+        {
+            item.IsWorking = false;
+        }
     }
 
     private Task RunContainerOperationAsync(UserOperation operation) =>
