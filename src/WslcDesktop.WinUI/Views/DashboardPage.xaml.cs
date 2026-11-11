@@ -34,7 +34,11 @@ public sealed partial class DashboardPage
 
     public async Task CleanupAsync()
     {
-        await WhenReadyAsync();
+        if (!await WhenReadyAsync())
+        {
+            return;
+        }
+
         CleanupOptions? previous = _services.Settings.Current.LastCleanup;
         if (await CleanupDialog.ChooseAsync(XamlRoot, ViewModel.GetCleanupSummary(), previous) is { HasAny: true } options)
         {
@@ -46,7 +50,11 @@ public sealed partial class DashboardPage
 
     public async Task StopAllContainersAsync()
     {
-        await WhenReadyAsync();
+        if (!await WhenReadyAsync())
+        {
+            return;
+        }
+
         if (await Dialogs.ConfirmStopAllContainersAsync(XamlRoot, _services.Monitor.Latest.RunningContainers))
         {
             await ViewModel.StopAllContainersAsync();
@@ -55,7 +63,11 @@ public sealed partial class DashboardPage
 
     public async Task StopRuntimeAsync()
     {
-        await WhenReadyAsync();
+        if (!await WhenReadyAsync())
+        {
+            return;
+        }
+
         int running = _services.Monitor.Latest.RunningContainers;
         if (await Dialogs.ConfirmAsync(
                 XamlRoot,
@@ -71,13 +83,16 @@ public sealed partial class DashboardPage
     /// <summary>
     ///     Waits for the page and for a first sample, since a jump-list command on a cold start arrives before either and its dialog would count nothing.
     /// </summary>
-    private async Task WhenReadyAsync()
+    /// <returns>False when the page left the window meanwhile, which leaves a dialog nowhere to open.</returns>
+    private async Task<bool> WhenReadyAsync()
     {
         await this.WhenLoadedAsync();
         if (!_services.Monitor.HasSampled)
         {
             await _services.Monitor.RefreshAsync();
         }
+
+        return XamlRoot is not null;
     }
 
     private async void OnShutdownClick(object sender, RoutedEventArgs e) => await ShutdownWslAsync();

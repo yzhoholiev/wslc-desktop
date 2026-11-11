@@ -62,7 +62,7 @@
                                 </MenuFlyoutItem>
                                 <MenuFlyoutSeparator />
                                 <MenuFlyoutItem Text="Stop all containers…" Click="OnStopAllClick"
-                                                IsEnabled="{x:Bind vm:Bindings.CanAct(ViewModel.IsRunning, ViewModel.IsBusy), Mode=OneWay}">
+                                                IsEnabled="{x:Bind vm:Bindings.CanAct(ViewModel.HasRunningContainers, ViewModel.IsBusy), Mode=OneWay}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE71A;" />
                                     </MenuFlyoutItem.Icon>

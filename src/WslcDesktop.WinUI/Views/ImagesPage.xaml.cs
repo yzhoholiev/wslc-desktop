@@ -35,8 +35,10 @@ public sealed partial class ImagesPage
 
     private async void OnRunClick(object sender, RoutedEventArgs e)
     {
+        // The page may have left the window while the defaults were read, which leaves the dialog nowhere to open.
         if (await ViewModel.LoadRunDefaultsAsync(sender.TagOf<ImageItem>()) is not { } defaults
-            || await RunImageDialog.ShowAsync(XamlRoot, defaults, _services.Commands.CreateContainerAsync) is not { } created)
+            || XamlRoot is not { } root
+            || await RunImageDialog.ShowAsync(root, defaults, _services.Commands.CreateContainerAsync) is not { } created)
         {
             return;
         }
