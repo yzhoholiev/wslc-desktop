@@ -17,12 +17,12 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/dashboard.png" alt="The WSLC Desktop dashboard: container, image, volume and network counts, CPU and memory graphs of the container VM, and the busiest containers">
+  <img src="docs/images/dashboard.png" alt="The WSLC Desktop dashboard: what needs attention, container, image, volume and network counts, a CPU and memory graph of the container VM with its top consumers, the ports running containers publish, and container storage">
 </p>
 
 ## ✨ Features
 
-- **Dashboard.** Counts of containers, images, volumes and networks; live CPU and memory of the container VM with 3-minute graphs; container storage; VM uptime; the busiest containers; quick actions.
+- **Dashboard.** What needs attention (failed or restarting containers, reclaimable space); counts of containers, images, volumes and networks; live CPU and memory of the container VM on a 3-minute graph with the top consumers; the ports running containers publish; container storage; quick actions.
 - **Containers.** A live list with state, status, ports, CPU and memory. Start, stop, restart and delete; open an interactive shell in Windows Terminal; read the logs (tail, follow, timestamps) and the `inspect` output.
 - **Images.** Size, age and usage. Pull; run or create a container with ports, volumes, variables, resource limits, GPUs and more; delete; prune dangling or all unused images.
 - **Volumes and networks.** Named and anonymous volumes with their mountpoints; user-defined networks. Delete and prune unused ones.
