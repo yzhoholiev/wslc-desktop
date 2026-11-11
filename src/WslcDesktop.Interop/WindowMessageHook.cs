@@ -9,7 +9,7 @@ public sealed class WindowMessageHook : IDisposable
     private readonly WindowSubclass _subclass;
 
     /// <summary>
-    ///     Starts listening for the message on the window's message loop, also from a non-elevated sender when the window is elevated.
+    ///     Starts listening for the message on the window's message loop, from senders at the window's own integrity level or above.
     /// </summary>
     /// <param name="hwnd">The window that receives the message.</param>
     /// <param name="message">A message from RegisterWindowMessage.</param>
@@ -18,7 +18,6 @@ public sealed class WindowMessageHook : IDisposable
     {
         _message = message;
         _subclass = new WindowSubclass(hwnd, Handle, onFailure);
-        _subclass.Allow(message);
     }
 
     public void Dispose() => _subclass.Dispose();
