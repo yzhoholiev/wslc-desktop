@@ -149,6 +149,12 @@ These fail only in the published AOT build, often with misleading errors:
 - A change that users can notice adds a line to `## [Unreleased]` in `CHANGELOG.md`, under Added, Changed or Fixed, worded for a user of the app rather than as a commit subject.
 - To release, rename that section to the version with its date, add an empty `## [Unreleased]` above it, update the links at the bottom, and tag the commit `vX.Y.Z`. The release job uses that section as the release text and fails when the version has none.
 
+## README screenshot
+
+- `docs/images/dashboard.png` shows the dashboard with a few demo containers (some publishing ports, one that exited with an error), not the maintainer's own; remove them afterwards and stop the runtime again if it was stopped before.
+- Cover the Windows user name wherever the image shows it. The session name in the status line under the title ends with it (`wslc-cli-<user>`), so cover everything after `wslc-cli-`, and look at the saved file to check before committing it.
+- Take it as a capture of the active window's own rectangle, since `PrintWindow` leaves out the acrylic backdrop. This is the one exception to capturing with `PrintWindow`.
+
 ## Commits
 
 - Short imperative subject, no trailing period, no issue key, and no mention of AI tools.
