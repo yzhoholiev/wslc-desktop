@@ -87,4 +87,49 @@ public sealed class SettingsStoreTests : IDisposable
         Assert.Empty(settings.SortOrders);
         Assert.Equal(BackdropNames.Acrylic, settings.Backdrop);
     }
+
+    [Fact]
+    public void Save_LeavesAFileThatCouldNotBeReadUntouched()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+        File.WriteAllText(_file, """{ "KeepRunningInTray": false }""");
+        var store = new SettingsStore(_file);
+        using (File.Open(_file, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            Assert.True(store.Current.KeepRunningInTray);
+        }
+
+        store.Save();
+
+        Assert.Equal("""{ "KeepRunningInTray": false }""", File.ReadAllText(_file));
+    }
+
+    [Fact]
+    public void Save_KeepsWhatAnotherInstanceSavedMeanwhile()
+    {
+        var first = new SettingsStore(_file);
+        var second = new SettingsStore(_file);
+        _ = first.Current;
+        _ = second.Current;
+
+        first.Current.Backdrop = BackdropNames.Mica;
+        first.Save();
+        second.Current.ShowLogTimestamps = false;
+        second.Save();
+
+        AppSettings reloaded = new SettingsStore(_file).Current;
+        Assert.Equal(BackdropNames.Mica, reloaded.Backdrop);
+        Assert.False(reloaded.ShowLogTimestamps);
+    }
+
+    [Fact]
+    public void Save_LeavesNoTemporaryFileBehind()
+    {
+        var store = new SettingsStore(_file);
+        store.Current.TrayHintShown = true;
+
+        store.Save();
+
+        Assert.Equal([_file], Directory.GetFiles(Path.GetDirectoryName(_file)!));
+    }
 }
