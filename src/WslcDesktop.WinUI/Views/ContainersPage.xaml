@@ -154,10 +154,16 @@
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
-                        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource RowActionButtonStyle}"
-                                Command="{x:Bind ViewModel.CloseDetailsCommand}" ToolTipService.ToolTip="Close" AutomationProperties.Name="Close">
-                            <FontIcon Glyph="&#xE711;" FontSize="14" />
-                        </Button>
+                        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+                            <Button Style="{StaticResource RowActionButtonStyle}" Click="OnCopyInspectClick" ToolTipService.ToolTip="Copy"
+                                    AutomationProperties.Name="Copy" Visibility="{x:Bind InspectTab.IsSelected, Mode=OneWay}">
+                                <FontIcon Glyph="&#xE8C8;" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource RowActionButtonStyle}" Command="{x:Bind ViewModel.CloseDetailsCommand}" ToolTipService.ToolTip="Close"
+                                    AutomationProperties.Name="Close">
+                                <FontIcon Glyph="&#xE711;" FontSize="14" />
+                            </Button>
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Row="1" RowSpacing="8" RowDefinitions="Auto, *">

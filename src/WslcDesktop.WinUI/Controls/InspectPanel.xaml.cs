@@ -1,6 +1,4 @@
 using Microsoft.UI.Xaml;
-using System.Runtime.InteropServices;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace WslcDesktop.Controls;
 
@@ -49,20 +47,7 @@ public sealed partial class InspectPanel
     private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
         ((InspectPanel)d).BodyScroller.ChangeView(0, 0, null, true);
 
-    private void OnCopyClick(object sender, RoutedEventArgs e)
-    {
-        var package = new DataPackage();
-        package.SetText(Text);
-        try
-        {
-            Clipboard.SetContent(package);
-        }
-        catch (COMException ex)
-        {
-            // Another process holding the clipboard open makes the call fail.
-            App.Services.Notifier.Error("Copy failed", ex.Message);
-        }
-    }
+    private void OnCopyClick(object sender, RoutedEventArgs e) => ClipboardText.Copy(Text, App.Services.Notifier);
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => CloseRequested?.Invoke(this, EventArgs.Empty);
 }

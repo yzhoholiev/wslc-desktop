@@ -101,6 +101,8 @@ public sealed partial class ContainersPage
 
     private void OnVolumeLinkClick(object? sender, string name) => App.Window.ShowVolume(name);
 
+    private void OnCopyInspectClick(object sender, RoutedEventArgs e) => ClipboardText.Copy(ViewModel.InspectText, _services.Notifier);
+
     private async void OnRemoveClick(object sender, RoutedEventArgs e)
     {
         ContainerItem item = sender.TagOf<ContainerItem>();
