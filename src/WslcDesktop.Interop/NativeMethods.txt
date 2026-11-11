@@ -9,11 +9,14 @@ DestinationList
 DestroyIcon
 DuplicateTokenEx
 EnumerableObjectCollection
+EqualSid
+GetCurrentProcess
 GetCursorPos
 GetDpiForMonitor
 GetDpiForWindow
 GetForegroundWindow
 GetShellWindow
+GetTokenInformation
 GetWindowPlacement
 GetWindowThreadProcessId
 HWND_BROADCAST
@@ -48,6 +51,8 @@ SetWindowPos
 SetWindowSubclass
 ShellLink
 Shell_NotifyIcon
+TOKEN_ELEVATION
+TOKEN_USER
 TaskbarList
 WINDOWPLACEMENT_FLAGS
 WINDOW_EX_STYLE

@@ -15,6 +15,11 @@ public static class ProcessLauncher
 {
     private const int ErrorCancelled = 1223;
 
+    /// <summary>
+    ///     Room for a TOKEN_USER and the SID it points to, which is at most SECURITY_MAX_SID_SIZE (68) bytes.
+    /// </summary>
+    private const int TokenUserSize = 128;
+
     private const TOKEN_ACCESS_MASK PrimaryTokenAccess = TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE |
                                                          TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT |
                                                          TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID;
@@ -71,10 +76,12 @@ public static class ProcessLauncher
         HANDLE token = default;
         try
         {
-            if (!PInvoke.OpenProcessToken(shellProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, &shellToken))
+            if (!PInvoke.OpenProcessToken(shellProcess, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, &shellToken))
             {
                 throw new Win32Exception(Marshal.GetLastPInvokeError());
             }
+
+            RequireNormalTokenOfThisUser(shellToken);
 
             if (!PInvoke.DuplicateTokenEx(shellToken, PrimaryTokenAccess, null, SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                     TOKEN_TYPE.TokenPrimary, &token))
@@ -89,6 +96,55 @@ public static class ProcessLauncher
             CloseIfOpen(token);
             CloseIfOpen(shellToken);
             CloseIfOpen(shellProcess);
+        }
+    }
+
+    /// <summary>
+    ///     Throws when the shell runs elevated, as with UAC off, or as another user, as after elevating with someone else's credentials.
+    /// </summary>
+    private static unsafe void RequireNormalTokenOfThisUser(HANDLE shellToken)
+    {
+        TOKEN_ELEVATION elevation;
+        uint length;
+        if (!PInvoke.GetTokenInformation(shellToken, TOKEN_INFORMATION_CLASS.TokenElevation, &elevation, (uint)sizeof(TOKEN_ELEVATION), &length))
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
+        }
+
+        if (elevation.TokenIsElevated != 0)
+        {
+            throw new InvalidOperationException("The Windows desktop itself runs as administrator here, so there is no user side to reopen in.");
+        }
+
+        HANDLE ownToken = default;
+        if (!PInvoke.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, &ownToken))
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
+        }
+
+        try
+        {
+            byte* shellUser = stackalloc byte[TokenUserSize];
+            byte* ownUser = stackalloc byte[TokenUserSize];
+            ReadUser(shellToken, shellUser);
+            ReadUser(ownToken, ownUser);
+            if (!PInvoke.EqualSid(((TOKEN_USER*)shellUser)->User.Sid, ((TOKEN_USER*)ownUser)->User.Sid))
+            {
+                throw new InvalidOperationException("The Windows desktop belongs to another user, so the app cannot be reopened there.");
+            }
+        }
+        finally
+        {
+            PInvoke.CloseHandle(ownToken);
+        }
+    }
+
+    private static unsafe void ReadUser(HANDLE token, byte* buffer)
+    {
+        uint length;
+        if (!PInvoke.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenUser, buffer, TokenUserSize, &length))
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
         }
     }
 
