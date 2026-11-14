@@ -40,6 +40,19 @@
     <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
   </PropertyGroup>
 
+  <!-- Unused framework features -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'WslcDesktop.WinUI' Or '$(MSBuildProjectName)' == 'WslcDesktop.Launcher'">
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetricsSupport>false</MetricsSupport>
+    <DebuggerSupport>false</DebuggerSupport>
+    <StartupHookSupport>false</StartupHookSupport>
+    <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+  </PropertyGroup>
+
   <!-- CsWin32, for the projects that list Win32 APIs in a NativeMethods.txt -->
   <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\NativeMethods.txt')">
     <!-- CsWin32 must generate before compile, and without runtime marshalling, to stay AOT-safe -->

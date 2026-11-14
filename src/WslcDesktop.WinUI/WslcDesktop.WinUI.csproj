@@ -35,19 +35,6 @@
     <TrimMode>full</TrimMode>
   </PropertyGroup>
 
-  <!-- Unused framework features -->
-  <PropertyGroup>
-    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
-    <EventSourceSupport>false</EventSourceSupport>
-    <MetricsSupport>false</MetricsSupport>
-    <DebuggerSupport>false</DebuggerSupport>
-    <StartupHookSupport>false</StartupHookSupport>
-    <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Windows' built-in NLS formats culture-correctly without loading icu.dll and its data -->
     <RuntimeHostConfigurationOption Include="System.Globalization.UseNls" Value="true" Trim="true" />
