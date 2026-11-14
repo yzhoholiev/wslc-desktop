@@ -22,11 +22,11 @@ public sealed unsafe class TrayIcon : IDisposable
     private static readonly uint TaskbarCreatedMessage = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
     private readonly HWND _hwnd;
-    private string _iconPath;
-    private SafeIconHandle _icon;
-    private int _iconSize;
     private readonly WindowSubclass _subclass;
     private bool _disposed;
+    private SafeIconHandle _icon;
+    private string _iconPath;
+    private int _iconSize;
     private string _tooltip;
 
     /// <summary>
@@ -147,7 +147,10 @@ public sealed unsafe class TrayIcon : IDisposable
     {
         // A per-monitor DPI-aware process must scale the 16 px small-icon size itself; the .ico has frames up to 40 px.
         HMONITOR primary = PInvoke.MonitorFromPoint(default, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY);
-        uint dpi = PInvoke.GetDpiForMonitor(primary, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _).Succeeded ? dpiX : PInvoke.GetDpiForWindow(_hwnd);
+        uint dpi = PInvoke.GetDpiForMonitor(primary, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _).Succeeded
+            ? dpiX
+            : PInvoke.GetDpiForWindow(_hwnd);
+
         return SafeIconHandle.SmallIconSize(dpi);
     }
 

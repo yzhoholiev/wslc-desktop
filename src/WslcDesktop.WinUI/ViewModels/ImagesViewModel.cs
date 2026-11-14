@@ -106,7 +106,8 @@ public sealed partial class ImagesViewModel : ResourceListViewModel<ImageItem>
     protected override string Summarize(IReadOnlyList<ImageItem> all)
     {
         var images = all.DistinctBy(item => item.Id).ToList();
-        return $"{Humanize.Count(images.Count, "image")} · {ByteSize.Format(images.Sum(item => item.SizeBytes))} · {images.Count(item => item.IsUnused)} unused";
+        return
+            $"{Humanize.Count(images.Count, "image")} · {ByteSize.Format(images.Sum(item => item.SizeBytes))} · {images.Count(item => item.IsUnused)} unused";
     }
 
     protected override string KeyOf(ImageItem item) => $"{item.Reference}@{item.ShortId}";

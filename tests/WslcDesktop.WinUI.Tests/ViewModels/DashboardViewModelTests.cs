@@ -64,6 +64,7 @@ public sealed class DashboardViewModelTests
         Assert.Equal("Critical", viewModel.AttentionTone);
         Assert.Equal(("api", " exited with code 1 · now", "Start"),
             (viewModel.SingleAttention?.Subject, viewModel.SingleAttention?.Text, viewModel.SingleAttention?.SecondaryAction));
+
         Assert.False(viewModel.HasAttentionList);
     }
 
@@ -89,6 +90,7 @@ public sealed class DashboardViewModelTests
 
         Assert.Equal(("Critical", "7 things need attention", "6 containers failed · 1000 B reclaimable"),
             (viewModel.AttentionTone, viewModel.AttentionTitle, viewModel.AttentionSummary));
+
         Assert.Equal(["job-1", "job-2", "job-3", "job-4", ""], viewModel.AttentionItems.Select(item => item.Subject));
         Assert.Equal("2 more containers · show them on the Containers page", viewModel.MoreAttentionText);
         Assert.True(viewModel.HasAttentionList);

@@ -56,7 +56,8 @@
 
             <Border Style="{StaticResource CardStyle}" Padding="0">
                 <Grid RowDefinitions="Auto, *">
-                    <Grid Padding="16,10,12,10" ColumnSpacing="12" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" ColumnDefinitions="2*, 2*, 1.5*, 1.5*, 64, 84, 72">
+                    <Grid Padding="16,10,12,10" ColumnSpacing="12" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"
+                          ColumnDefinitions="2*, 2*, 1.5*, 1.5*, 64, 84, 72">
                         <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                         <controls:SortHeader Grid.Column="1" Text="IMAGE" Key="image" Sort="{x:Bind ViewModel.Sort}" />
                         <controls:SortHeader Grid.Column="2" Text="STATUS" Key="status" Sort="{x:Bind ViewModel.Sort}" />
@@ -85,7 +86,8 @@
                                 <controls:ClickableRow Height="48" ColumnSpacing="12" ColumnDefinitions="2*, 2*, 1.5*, 1.5*, 64, 84, 72">
                                     <controls:ClickableRow.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Text="{x:Bind vm:Labels.StartStopLabel(IsRunning), Mode=OneWay}" Tag="{x:Bind}" Click="OnStartStopClick">
+                                            <MenuFlyoutItem Text="{x:Bind vm:Labels.StartStopLabel(IsRunning), Mode=OneWay}" Tag="{x:Bind}"
+                                                            Click="OnStartStopClick">
                                                 <MenuFlyoutItem.Icon>
                                                     <FontIcon Glyph="{x:Bind vm:Bindings.StartStopGlyph(IsRunning), Mode=OneWay}" />
                                                 </MenuFlyoutItem.Icon>
@@ -198,7 +200,8 @@
                                     AutomationProperties.Name="Copy" Visibility="{x:Bind InspectTab.IsSelected, Mode=OneWay}">
                                 <FontIcon Glyph="&#xE8C8;" FontSize="14" />
                             </Button>
-                            <Button Style="{StaticResource RowActionButtonStyle}" Command="{x:Bind ViewModel.CloseDetailsCommand}" ToolTipService.ToolTip="Close"
+                            <Button Style="{StaticResource RowActionButtonStyle}" Command="{x:Bind ViewModel.CloseDetailsCommand}"
+                                    ToolTipService.ToolTip="Close"
                                     AutomationProperties.Name="Close">
                                 <FontIcon Glyph="&#xE711;" FontSize="14" />
                             </Button>

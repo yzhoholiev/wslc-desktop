@@ -55,8 +55,11 @@ public sealed partial class MainWindow
                 new TrayMenuItem("Start container runtime", () => _ = Services.Actions.StartRuntimeInBackgroundAsync(), Glyph: Glyphs.Start)
             ];
 
-        TrayMenuItem[] reopen = [new TrayMenuItem(Labels.ReopenLabel(!Elevation.IsElevated), () => _ = SwitchSideAsync(),
-            Glyph: Elevation.IsElevated ? null : Glyphs.Shield, DotColor: snapshot.IsOtherSideRunning == true ? RunningDot : StoppedDot)];
+        TrayMenuItem[] reopen =
+        [
+            new(Labels.ReopenLabel(!Elevation.IsElevated), () => _ = SwitchSideAsync(),
+                Glyph: Elevation.IsElevated ? null : Glyphs.Shield, DotColor: snapshot.IsOtherSideRunning == true ? RunningDot : StoppedDot)
+        ];
 
         TrayMenuItem status = new(Labels.RuntimeStatus(snapshot), Children: reopen, Glyph: Elevation.IsElevated ? Glyphs.Shield : null,
             DotColor: statusDot);

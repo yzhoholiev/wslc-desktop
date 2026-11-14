@@ -21,7 +21,8 @@
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <Button x:Name="UserSideButton" Style="{StaticResource SideButtonStyle}" Click="OnSideClick" AutomationProperties.Name="User runtime">
+                            <Button x:Name="UserSideButton" Style="{StaticResource SideButtonStyle}" Click="OnSideClick"
+                                    AutomationProperties.Name="User runtime">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Ellipse x:Name="UserSideDot" Width="8" Height="8" VerticalAlignment="Center" />
                                     <TextBlock Text="User" VerticalAlignment="Center" />

@@ -134,7 +134,9 @@ public sealed partial class MainWindow
 
         if (!Services.Settings.Current.TrayHintShown)
         {
-            _tray.ShowBalloon($"{AppIdentity.DisplayName} is still running", "Use the tray icon to reopen it or to manage containers. Choose Exit from its menu to quit.");
+            _tray.ShowBalloon($"{AppIdentity.DisplayName} is still running",
+                "Use the tray icon to reopen it or to manage containers. Choose Exit from its menu to quit.");
+
             Services.Settings.Current.TrayHintShown = true;
             Services.Settings.Save();
         }

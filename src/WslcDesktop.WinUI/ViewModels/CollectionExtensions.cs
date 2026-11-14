@@ -19,8 +19,7 @@ public static class CollectionExtensions
         public void SyncTo<TKey>(ReadOnlySpan<T> source, Func<T, TKey> keyOf)
         {
             EqualityComparer<TKey> comparer = EqualityComparer<TKey>.Default;
-        nextItem:
-            for (int i = 0; i < source.Length; i++)
+        nextItem: for (int i = 0; i < source.Length; i++)
             {
                 TKey key = keyOf(source[i]);
                 for (int j = i; j < target.Count; j++)

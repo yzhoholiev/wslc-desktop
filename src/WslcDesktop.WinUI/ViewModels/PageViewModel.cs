@@ -16,6 +16,11 @@ public abstract partial class PageViewModel(AppServices services) : ObservableOb
     [ObservableProperty]
     public partial bool IsBusy { get; private set; }
 
+    /// <summary>
+    ///     Whether this page's own work is running, as opposed to a runtime operation started elsewhere.
+    /// </summary>
+    protected bool IsWorking => _busyCount > 0;
+
     [RelayCommand]
     public Task StartRuntimeAsync() => RunRuntimeOperationAsync(RuntimeActions.StartRuntimeDescription, Services.Actions.StartRuntimeAsync);
 
@@ -86,11 +91,6 @@ public abstract partial class PageViewModel(AppServices services) : ObservableOb
     ///     Shows the busy indicator for this page's own work and for a runtime operation started anywhere, such as a start from the tray.
     /// </summary>
     public void UpdateBusy() => IsBusy = IsWorking || Services.Monitor.Operation is not null;
-
-    /// <summary>
-    ///     Whether this page's own work is running, as opposed to a runtime operation started elsewhere.
-    /// </summary>
-    protected bool IsWorking => _busyCount > 0;
 
     private void SetBusy(int delta)
     {

@@ -53,11 +53,6 @@ public sealed partial class ResourceListView
         KeyDown += OnKeyDown;
     }
 
-    /// <summary>
-    ///     Raised with the selected item when the Delete key is pressed in the list.
-    /// </summary>
-    public event EventHandler<object>? DeleteRequested;
-
     public IResourceListViewModel? List
     {
         get => (IResourceListViewModel?)GetValue(ListProperty);
@@ -108,6 +103,11 @@ public sealed partial class ResourceListView
         get => (DataTemplate?)GetValue(ItemTemplateProperty);
         set => SetValue(ItemTemplateProperty, value);
     }
+
+    /// <summary>
+    ///     Raised with the selected item when the Delete key is pressed in the list.
+    /// </summary>
+    public event EventHandler<object>? DeleteRequested;
 
     private static void OnListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {

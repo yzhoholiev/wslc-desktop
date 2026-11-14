@@ -13,13 +13,21 @@ public sealed class AppSettings
     public bool StopRuntimeOnExit { get; set; }
 
     [AllowNull]
-    public string Backdrop { get; set => field = value ?? BackdropNames.Acrylic; } = BackdropNames.Acrylic;
+    public string Backdrop
+    {
+        get;
+        set => field = value ?? BackdropNames.Acrylic;
+    } = BackdropNames.Acrylic;
 
     /// <summary>
     ///     Sort order per list page, as "column:asc" or "column:desc".
     /// </summary>
     [AllowNull]
-    public Dictionary<string, string> SortOrders { get; set => field = value ?? []; } = [];
+    public Dictionary<string, string> SortOrders
+    {
+        get;
+        set => field = value ?? [];
+    } = [];
 
     public bool ShowLogTimestamps { get; set; } = true;
 
@@ -36,7 +44,11 @@ public sealed class AppSettings
     ///     Dashboard attention items the user dismissed, each with the amount it had then; an item returns once it exceeds that.
     /// </summary>
     [AllowNull]
-    public Dictionary<string, long> DismissedAttention { get; set => field = value ?? []; } = [];
+    public Dictionary<string, long> DismissedAttention
+    {
+        get;
+        set => field = value ?? [];
+    } = [];
 
     /// <summary>
     ///     Whether the dashboard's attention banner lists its items.

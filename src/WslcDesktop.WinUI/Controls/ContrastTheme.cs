@@ -12,7 +12,10 @@ internal static class ContrastTheme
     private static readonly UISettings Colors = new();
 
     // AccessibilitySettings.HighContrastChanged needs a CoreWindow and fails with 0x80070490 in a desktop app.
-    static ContrastTheme() => Colors.ColorValuesChanged += (_, _) => Changed?.Invoke();
+    static ContrastTheme()
+    {
+        Colors.ColorValuesChanged += (_, _) => Changed?.Invoke();
+    }
 
     /// <summary>
     ///     Whether a contrast theme is on, whose colors the user chose and content coloring would override.

@@ -16,7 +16,10 @@ public sealed class SessionShellTests : IDisposable
 
     private readonly SessionShell _shell = Shell(Patient);
 
-    public SessionShellTests() => Assert.SkipUnless(File.Exists(Sh), "Git for Windows is not installed.");
+    public SessionShellTests()
+    {
+        Assert.SkipUnless(File.Exists(Sh), "Git for Windows is not installed.");
+    }
 
     public void Dispose() => _shell.Dispose();
 
@@ -48,6 +51,7 @@ public sealed class SessionShellTests : IDisposable
 
         SessionEndedException error = await Assert.ThrowsAsync<SessionEndedException>(() =>
             impatient.ExecuteAsync("sleep 30", TestContext.Current.CancellationToken));
+
         Assert.Contains("did not answer within 2 seconds", error.Message);
 
         ShellResult next = await impatient.ExecuteAsync("echo back", TestContext.Current.CancellationToken);

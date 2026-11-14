@@ -37,7 +37,8 @@
                     <StackPanel Spacing="8">
                         <TextBlock Text="Manage" Style="{StaticResource CardTitleStyle}" />
                         <!-- Never disabled: shutting down WSL is what ends a hung runtime operation -->
-                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Click="OnShutdownClick" AutomationProperties.Name="Shut down WSL">
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Click="OnShutdownClick"
+                                AutomationProperties.Name="Shut down WSL">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon Glyph="&#xE7E8;" FontSize="14" />
                                 <TextBlock Text="Shut down WSL" />
@@ -133,7 +134,8 @@
                             </StackPanel>
                         </Button>
                     </Grid>
-                    <TextBlock Text="Applies to WSL distributions, not to the container VM, which takes its settings from wslc." Style="{StaticResource CaptionTextBlockStyle}"
+                    <TextBlock Text="Applies to WSL distributions, not to the container VM, which takes its settings from wslc."
+                               Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
                     <TextBlock Text="{x:Bind ViewModel.WslConfigText, Mode=OneWay}" FontFamily="{StaticResource MonoFont}" FontSize="12"
                                IsTextSelectionEnabled="True" TextWrapping="Wrap" />

@@ -27,13 +27,19 @@ public sealed partial class Sparkline : Grid
     private static readonly double[] GridFractions = [0.25, 0.5, 0.75];
     private readonly Polygon _area = new();
 
+    private readonly GradientStop _areaBottom = new() { Offset = 1 };
+
     private readonly GradientStop _areaTop = new() { Offset = 0 };
 
-    private readonly GradientStop _areaBottom = new() { Offset = 1 };
+    private readonly TextBlock _ceilingLabel = new()
+    {
+        HorizontalAlignment = HorizontalAlignment.Left,
+        VerticalAlignment = VerticalAlignment.Top,
+        IsHitTestVisible = false
+    };
 
     private readonly Line[] _gridLines;
     private readonly Polyline _line = new();
-    private readonly Polyline _secondaryLine = new();
 
     private readonly Ellipse _marker = new()
     {
@@ -44,19 +50,14 @@ public sealed partial class Sparkline : Grid
         Visibility = Visibility.Collapsed
     };
 
-    private readonly TextBlock _ceilingLabel = new()
-    {
-        HorizontalAlignment = HorizontalAlignment.Left,
-        VerticalAlignment = VerticalAlignment.Top,
-        IsHitTestVisible = false
-    };
-
     private readonly TextBlock _secondaryCeilingLabel = new()
     {
         HorizontalAlignment = HorizontalAlignment.Right,
         VerticalAlignment = VerticalAlignment.Top,
         IsHitTestVisible = false
     };
+
+    private readonly Polyline _secondaryLine = new();
 
     private double _ceiling = 100;
 

@@ -250,6 +250,11 @@ internal sealed class FakeWslPlatform : IWslPlatform
     /// </summary>
     public Exception? QueryFailure { get; set; }
 
+    /// <summary>
+    ///     Holds the shutdown until completed, to test what happens while one runs.
+    /// </summary>
+    public TaskCompletionSource? PendingShutdown { get; set; }
+
     public bool IsSettingsAppInstalled { get; set; }
 
     public Task<List<WslDistro>> ListDistrosAsync(CancellationToken ct = default) =>
@@ -257,11 +262,6 @@ internal sealed class FakeWslPlatform : IWslPlatform
 
     public Task<List<KeyValueEntry>> GetVersionInfoAsync(CancellationToken ct = default) =>
         QueryFailure is { } failure ? Task.FromException<List<KeyValueEntry>>(failure) : Task.FromResult(VersionInfo);
-
-    /// <summary>
-    ///     Holds the shutdown until completed, to test what happens while one runs.
-    /// </summary>
-    public TaskCompletionSource? PendingShutdown { get; set; }
 
     public async Task ShutdownAsync()
     {
@@ -298,9 +298,8 @@ internal sealed class FakeWslConfig : IWslConfig
 
 internal sealed class FakeWslcSettings : IWslcSettings
 {
-    public string FilePath => @"C:\Users\someone\AppData\Local\wslc\settings.yaml";
-
     public string Text { get; set; } = "";
+    public string FilePath => @"C:\Users\someone\AppData\Local\wslc\settings.yaml";
 
     public string ReadText() => Text;
 }

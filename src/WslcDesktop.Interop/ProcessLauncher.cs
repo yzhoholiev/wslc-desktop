@@ -21,8 +21,8 @@ public static class ProcessLauncher
     private const int TokenUserSize = 128;
 
     private const TOKEN_ACCESS_MASK PrimaryTokenAccess = TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE |
-                                                         TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT |
-                                                         TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID;
+        TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT |
+        TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID;
 
     /// <summary>
     ///     Starts the program elevated, which shows the consent prompt; false when the user declines it.

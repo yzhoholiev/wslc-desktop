@@ -63,6 +63,7 @@ public sealed class ImagesViewModelTests
             new ImageDto { Id = "sha256:a", Repository = "app", Tag = "latest", Size = "1MB", Containers = "0" },
             new ImageDto { Id = "sha256:b", Repository = "db", Tag = "16", Size = "2MB", Containers = "1" }
         ];
+
         var viewModel = new ImagesViewModel(_test.Services);
 
         await viewModel.LoadAsync();

@@ -16,6 +16,7 @@ public sealed class JumpListTasksTests
         Assert.All(Tasks, task => Assert.Equal(Launcher.Executable, task.ProgramPath));
         Assert.Equal(Enum.GetValues<LaunchCommand>().Where(command => command != LaunchCommand.None),
             Tasks.Select(task => LaunchCommands.Parse([task.Arguments])));
+
         Assert.Equal(4, separator);
         Assert.Equal(LaunchCommand.ShowWsl, LaunchCommands.Parse([Assert.IsType<JumpListTask>(items[separator - 1]).Arguments]));
         Assert.Equal(LaunchCommand.StartRuntime, LaunchCommands.Parse([Assert.IsType<JumpListTask>(items[separator + 1]).Arguments]));

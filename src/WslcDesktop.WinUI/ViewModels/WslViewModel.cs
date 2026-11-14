@@ -8,14 +8,14 @@ namespace WslcDesktop.ViewModels;
 
 public sealed partial class WslViewModel : PageViewModel
 {
+    private const int DistroRefreshEveryUpdates = 3;
+
     private static readonly Dictionary<string, SortColumn<WslDistro>> DistroColumns = new()
     {
         ["name"] = new SortColumn<WslDistro>(distro => distro.Name),
         ["state"] = new SortColumn<WslDistro>(distro => distro.IsRunning ? 0 : 1),
         ["version"] = new SortColumn<WslDistro>(distro => distro.Version)
     };
-
-    private const int DistroRefreshEveryUpdates = 3;
 
     private List<WslDistro> _distros = [];
     private bool _isRefreshingDistros;

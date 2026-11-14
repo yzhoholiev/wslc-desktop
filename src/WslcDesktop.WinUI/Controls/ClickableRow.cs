@@ -40,7 +40,8 @@ public sealed partial class ClickableRow : Grid
             if (_menuButton is null && FindName(MenuButtonName) is Button menuButton)
             {
                 _menuButton = menuButton;
-                menuButton.Click += (_, _) => ContextFlyout?.ShowAt(menuButton, new FlyoutShowOptions { Placement = FlyoutPlacementMode.BottomEdgeAlignedRight });
+                menuButton.Click += (_, _) =>
+                    ContextFlyout?.ShowAt(menuButton, new FlyoutShowOptions { Placement = FlyoutPlacementMode.BottomEdgeAlignedRight });
             }
 
             WatchSelection(FindContainer());

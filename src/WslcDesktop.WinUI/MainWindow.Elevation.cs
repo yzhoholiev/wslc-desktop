@@ -102,7 +102,7 @@ public sealed partial class MainWindow
     };
 
     private static string AdministratorIcon(string kind, string badge) =>
-        System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Administrator", $"{kind}-{badge}.ico");
+        Path.Combine(AppContext.BaseDirectory, "Assets", "Administrator", $"{kind}-{badge}.ico");
 
     private async void OnSideClick(object sender, RoutedEventArgs e)
     {
@@ -137,7 +137,7 @@ public sealed partial class MainWindow
                 return;
             }
 
-            await ExitApplicationAsync(keepRuntime: true);
+            await ExitApplicationAsync(true);
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
         {

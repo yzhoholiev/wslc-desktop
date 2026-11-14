@@ -9,6 +9,13 @@ namespace WslcDesktop.Services;
 /// </summary>
 internal sealed class SessionShell(string session, TimeSpan commandTimeout, Func<ProcessStartInfo> createStartInfo) : ISessionShell
 {
+    private static readonly TimeSpan ExitGracePeriod = TimeSpan.FromSeconds(1);
+
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly StringBuilder _stderr = new();
+    private volatile bool _disposed;
+    private Process? _process;
+
     /// <summary>
     ///     A shell in the named session; naming it makes wslc fail instead of creating the session, so the shell can never boot the VM by itself.
     /// </summary>
@@ -16,13 +23,6 @@ internal sealed class SessionShell(string session, TimeSpan commandTimeout, Func
         : this(session, WslcCli.QueryTimeout, () => Cli.CreateStartInfo(WslcCli.ExecutablePath, WslcCli.SessionRunArguments(session, "sh")))
     {
     }
-
-    private static readonly TimeSpan ExitGracePeriod = TimeSpan.FromSeconds(1);
-
-    private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly StringBuilder _stderr = new();
-    private volatile bool _disposed;
-    private Process? _process;
 
     public string Session { get; } = session;
 
