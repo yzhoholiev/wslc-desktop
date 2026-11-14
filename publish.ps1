@@ -15,14 +15,16 @@ if ((Test-Path "$installerDir\vswhere.exe") -and -not ($env:PATH -split ';' -con
 }
 
 $appDir = "$PSScriptRoot\artifacts\app\$Runtime"
-$payload = "$PSScriptRoot\artifacts\payload-$Runtime.zip"
+$payload = "$PSScriptRoot\artifacts\payload-$Runtime.tar.zst"
 
 Remove-Item $appDir -Recurse -Force -ErrorAction SilentlyContinue
 dotnet publish "$PSScriptRoot\src\WslcDesktop.WinUI\WslcDesktop.WinUI.csproj" -c Release -r $Runtime -o $appDir
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Remove-Item $payload -Force -ErrorAction SilentlyContinue
-[System.IO.Compression.ZipFile]::CreateFromDirectory($appDir, $payload, [System.IO.Compression.CompressionLevel]::SmallestSize, $false)
+# Packed by the SDK rather than by this shell, whose own .NET may predate Zstandard support.
+dotnet run "$PSScriptRoot\tools\PackPayload.cs" -- $appDir $payload
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # The launcher unpacks each distinct payload into its own folder named after this tag.
 $payloadVersion = (Get-FileHash $payload -Algorithm SHA256).Hash.Substring(0, 16).ToLowerInvariant()

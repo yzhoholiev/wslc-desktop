@@ -7,6 +7,7 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 ### Changed
 
 - **Published ports show the hand cursor**, like other links.
+- **The download is smaller**, about 20 MB instead of 27 MB.
 
 ## [1.1.0] - 2026-11-11
 

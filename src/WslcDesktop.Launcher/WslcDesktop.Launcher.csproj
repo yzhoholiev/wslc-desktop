@@ -19,9 +19,9 @@
     <StackTraceSupport>false</StackTraceSupport>
   </PropertyGroup>
 
-  <!-- Zipped publish output of the WinUI app, produced by publish.ps1 -->
+  <!-- Compressed publish output of the WinUI app, produced by publish.ps1 -->
   <ItemGroup Condition="'$(PayloadPath)' != ''">
-    <EmbeddedResource Include="$(PayloadPath)" LogicalName="payload.zip" />
+    <EmbeddedResource Include="$(PayloadPath)" LogicalName="payload.tar.zst" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(PayloadVersion)' != ''">

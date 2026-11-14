@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Formats.Tar;
 using System.IO.Compression;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -12,7 +13,7 @@ namespace WslcDesktop.Launcher;
 /// </summary>
 internal static class Program
 {
-    private const string PayloadResource = "payload.zip";
+    private const string PayloadResource = "payload.tar.zst";
     private const string PayloadVersionMetadata = "PayloadVersion";
     private const string AppExecutable = "WslcDesktop.exe";
     private const string CompleteMarker = ".complete";
@@ -101,7 +102,12 @@ internal static class Program
         try
         {
             payload.Position = 0;
-            ZipFile.ExtractToDirectory(payload, staging);
+            Directory.CreateDirectory(staging);
+            using (var archive = new ZstandardStream(payload, CompressionMode.Decompress, true))
+            {
+                TarFile.ExtractToDirectory(archive, staging, false);
+            }
+
             File.WriteAllText(Path.Combine(staging, CompleteMarker), "");
 
             // Under the unpack lock, a target that is not unpacked can only be the remains of a crashed launch or a damaged copy.
