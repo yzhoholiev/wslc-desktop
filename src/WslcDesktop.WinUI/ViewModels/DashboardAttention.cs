@@ -52,6 +52,16 @@ public static partial class DashboardAttention
     private static readonly int[] NormalExitCodes = [0, 137, 143];
 
     /// <summary>
+    ///     The exit code the engine gives a container that was running when the runtime stopped under it.
+    /// </summary>
+    private const int InterruptedExitCode = 255;
+
+    /// <summary>
+    ///     The engine marks interrupted containers as it starts, which is shortly after the VM's uptime begins.
+    /// </summary>
+    private static readonly TimeSpan EngineStartAllowance = TimeSpan.FromMinutes(1);
+
+    /// <summary>
     ///     The items to report, most serious first, without the ones the user dismissed.
     /// </summary>
     /// <param name="snapshot">The latest reading of the runtime.</param>
@@ -61,7 +71,7 @@ public static partial class DashboardAttention
         List<AttentionItem> items = [];
         foreach (ContainerDto container in snapshot.Containers.OrderBy(container => container.Names, StringComparer.OrdinalIgnoreCase))
         {
-            if (FailureOf(container) is { } failure && !dismissed.ContainsKey(container.Id))
+            if (FailureOf(container, snapshot.Vm?.Uptime) is { } failure && !dismissed.ContainsKey(container.Id))
             {
                 items.Add(new AttentionItem(AttentionKind.ContainerFailed, container.Id, container.Id, container.Names, failure, 0));
             }
@@ -88,7 +98,10 @@ public static partial class DashboardAttention
     /// <returns>Whether any dismissal was dropped.</returns>
     public static bool Forget(RuntimeSnapshot snapshot, Dictionary<string, long> dismissed)
     {
-        var failed = snapshot.Containers.Where(container => FailureOf(container) is not null).Select(container => container.Id).ToHashSet();
+        var failed = snapshot.Containers
+            .Where(container => FailureOf(container, snapshot.Vm?.Uptime) is not null)
+            .Select(container => container.Id)
+            .ToHashSet();
         List<string> stale = [.. dismissed.Keys.Where(key => key != UnusedImagesKey && !failed.Contains(key))];
         foreach (string key in stale)
         {
@@ -127,7 +140,9 @@ public static partial class DashboardAttention
     /// <summary>
     ///     How the container failed, as the text after its name, or null when it did not.
     /// </summary>
-    private static string? FailureOf(ContainerDto container)
+    /// <param name="container">The container to judge.</param>
+    /// <param name="uptime">How long the runtime has been up, if known.</param>
+    private static string? FailureOf(ContainerDto container, TimeSpan? uptime)
     {
         if (container.State != "exited" || ExitedPattern().Match(container.Status) is not { Success: true } match)
         {
@@ -135,13 +150,39 @@ public static partial class DashboardAttention
         }
 
         int code = int.Parse(match.Groups[1].ValueSpan);
-        if (NormalExitCodes.Contains(code))
+        string when = match.Groups[2].Value;
+        if (NormalExitCodes.Contains(code) || (code == InterruptedExitCode && uptime is { } up && ExitedByRuntimeStart(when, up)))
         {
             return null;
         }
 
-        string when = match.Groups[2].Value;
         return when.Length > 0 ? $" exited with code {code} · {when}" : $" exited with code {code}";
+    }
+
+    /// <summary>
+    ///     Whether a container may have exited no later than the runtime started, going by the rounded age in its status.
+    /// </summary>
+    private static bool ExitedByRuntimeStart(string when, TimeSpan uptime)
+    {
+        if (AgePattern().Match(when) is not { Success: true } match)
+        {
+            return false;
+        }
+
+        TimeSpan unit = match.Groups[2].Value switch
+        {
+            "second" => TimeSpan.FromSeconds(1),
+            "minute" => TimeSpan.FromMinutes(1),
+            "hour" => TimeSpan.FromHours(1),
+            "day" => TimeSpan.FromDays(1),
+            "week" => TimeSpan.FromDays(7),
+            "month" => TimeSpan.FromDays(31),
+            _ => TimeSpan.FromDays(366)
+        };
+
+        // The status rounds the age down, or to the nearest unit for "About a…", so the real age is below the next unit, or the one after.
+        long units = match.Groups[1].Success ? long.Parse(match.Groups[1].ValueSpan) + 1 : 2;
+        return unit * units + EngineStartAllowance >= uptime;
     }
 
     /// <summary>
@@ -149,4 +190,10 @@ public static partial class DashboardAttention
     /// </summary>
     [GeneratedRegex(@"^Exited \((\d{1,9})\)\s*(.*)$", RegexOptions.None, 1000)]
     private static partial Regex ExitedPattern();
+
+    /// <summary>
+    ///     The age in a container status, such as "26 seconds ago", "About an hour ago" or "Less than a second ago": the count if it has one, then the unit.
+    /// </summary>
+    [GeneratedRegex(@"^(?:(\d{1,9})|About an?|Less than a) (second|minute|hour|day|week|month|year)s? ago$", RegexOptions.None, 1000)]
+    private static partial Regex AgePattern();
 }

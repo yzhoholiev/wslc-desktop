@@ -28,6 +28,31 @@ public sealed class DashboardAttentionTests
     public void Build_IgnoresAContainerThatStoppedNormally(string status) =>
         Assert.Empty(DashboardAttention.Build(Running(Exited("api", status)), NothingDismissed));
 
+    [Theory]
+    [InlineData("Exited (255) 26 seconds ago", 15)]
+    [InlineData("Exited (255) 12 seconds ago", 15)]
+    [InlineData("Exited (255) Less than a second ago", 2)]
+    [InlineData("Exited (255) About a minute ago", 95)]
+    [InlineData("Exited (255) 5 minutes ago", 5 * 60 + 40)]
+    [InlineData("Exited (255) About an hour ago", 80 * 60)]
+    [InlineData("Exited (255) 2 hours ago", 170 * 60)]
+    [InlineData("Exited (255) 3 days ago", 3 * 86400 + 3600)]
+    public void Build_IgnoresAContainerThatTheRuntimeStopInterrupted(string status, int uptimeSeconds) =>
+        Assert.Empty(DashboardAttention.Build(UpFor(uptimeSeconds, Exited("api", status)), NothingDismissed));
+
+    [Theory]
+    [InlineData("Exited (255) 26 seconds ago", 600)]
+    [InlineData("Exited (255) 5 minutes ago", 3600)]
+    [InlineData("Exited (255) 2 hours ago", 6 * 3600)]
+    [InlineData("Exited (255)", 15)]
+    [InlineData("Exited (1) 26 seconds ago", 15)]
+    public void Build_ReportsAnErrorExitWhileTheRuntimeWasUp(string status, int uptimeSeconds) =>
+        Assert.Single(DashboardAttention.Build(UpFor(uptimeSeconds, Exited("api", status)), NothingDismissed));
+
+    [Fact]
+    public void Build_ReportsExitCode255WhenTheUptimeIsUnknown() =>
+        Assert.Single(DashboardAttention.Build(Running(Exited("api", "Exited (255) 26 seconds ago")), NothingDismissed));
+
     [Fact]
     public void Build_ReportsARestartLoopThatCannotBeDismissed()
     {
@@ -109,6 +134,9 @@ public sealed class DashboardAttentionTests
         container.Status = status;
         return container;
     }
+
+    private static RuntimeSnapshot UpFor(int seconds, params ContainerDto[] containers) =>
+        Running(containers) with { Vm = new VmMetrics(1, 0, 100, 50, 0, 0, "", TimeSpan.FromSeconds(seconds)) };
 
     private static Inventory UnusedImages(int count, long size) => new(count, size, count, 0, 0, 0, 0, size);
 }
