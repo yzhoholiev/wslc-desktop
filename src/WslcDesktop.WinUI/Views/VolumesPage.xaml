@@ -29,15 +29,15 @@
                     </MenuFlyout>
                 </controls:ClickableRow.ContextFlyout>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis"
-                               Style="{StaticResource BodyStrongTextBlockStyle}" ToolTipService.ToolTip="{x:Bind Name}"
+                    <TextBlock Text="{x:Bind DisplayName}" controls:Overflow.FullText="{x:Bind Name}"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
                                AutomationProperties.Name="{x:Bind Name}" />
                     <TextBlock Text="{x:Bind Kind}" Style="{StaticResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" controls:Overflow.Shortens="True" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{x:Bind Driver}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                <TextBlock Grid.Column="1" Text="{x:Bind Driver}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Grid.Column="2" Text="{x:Bind Mountpoint}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                <TextBlock Grid.Column="2" Text="{x:Bind Mountpoint}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="12" />
                 <controls:UsageChip Grid.Column="3" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
                 <StackPanel x:Name="RowActions" Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">

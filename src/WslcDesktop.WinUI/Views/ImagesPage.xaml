@@ -35,17 +35,18 @@
                     </MenuFlyout>
                 </controls:ClickableRow.ContextFlyout>
                 <StackPanel VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{x:Bind Repository}" TextTrimming="CharacterEllipsis"
-                                   Style="{StaticResource BodyStrongTextBlockStyle}" ToolTipService.ToolTip="{x:Bind Reference}" />
-                        <Border Style="{StaticResource PillStyle}" Background="{ThemeResource ImagesBadgeBackgroundBrush}"
+                    <Grid HorizontalAlignment="Left" ColumnSpacing="6" ColumnDefinitions="*, Auto">
+                        <TextBlock Text="{x:Bind Repository}" controls:Overflow.FullText="{x:Bind Reference}"
+                                   Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <Border Grid.Column="1" Style="{StaticResource PillStyle}" Background="{ThemeResource ImagesBadgeBackgroundBrush}"
                                 Visibility="{x:Bind HasTag}">
-                            <TextBlock Text="{x:Bind Tag}" Style="{StaticResource PillTextStyle}" FontFamily="{StaticResource MonoFont}" />
+                            <TextBlock Text="{x:Bind Tag}" controls:Overflow.Shortens="True" Style="{StaticResource PillTextStyle}"
+                                       FontFamily="{StaticResource MonoFont}" />
                         </Border>
-                    </StackPanel>
+                    </Grid>
                     <TextBlock Text="{x:Bind ShortId}" FontFamily="{StaticResource MonoFont}"
                                Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                               TextTrimming="CharacterEllipsis" />
+                               controls:Overflow.FullText="{x:Bind Id}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                     <TextBlock Text="{x:Bind Size}" />
@@ -58,7 +59,7 @@
                         <Border CornerRadius="1.5" Background="{ThemeResource ImagesBadgeBrush}" />
                     </Grid>
                 </StackPanel>
-                <TextBlock Grid.Column="2" Text="{x:Bind Created}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                <TextBlock Grid.Column="2" Text="{x:Bind Created}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <controls:UsageChip Grid.Column="3" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
                 <StackPanel x:Name="RowActions" Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">

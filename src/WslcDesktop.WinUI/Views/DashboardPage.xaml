@@ -13,7 +13,7 @@
             <Grid ColumnSpacing="10" Padding="0,4" ColumnDefinitions="Auto, Auto, *, Auto">
                 <Ellipse Width="8" Height="8" VerticalAlignment="Center" Style="{x:Bind vm:Bindings.ToneDotStyle(Tone)}" />
                 <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Text="{x:Bind Subject}" />
-                <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{x:Bind Text}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" controls:Overflow.Shortens="True" Text="{x:Bind Text}" />
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
                     <Button Content="{x:Bind PrimaryAction}" Tag="{x:Bind}" Click="OnAttentionPrimaryClick"
                             Visibility="{x:Bind vm:Bindings.VisibleWhenAny(PrimaryAction)}" />
@@ -155,7 +155,7 @@
                                      Style="{x:Bind vm:Bindings.ToneDotStyle(ViewModel.AttentionTone), Mode=OneWay}" />
                             <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
                                        Text="{x:Bind ViewModel.AttentionTitle, Mode=OneWay}" />
-                            <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                                        Text="{x:Bind ViewModel.AttentionSummary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
                                 <Button Content="Dismiss all" Command="{x:Bind ViewModel.DismissAllCommand}" />
@@ -218,9 +218,9 @@
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Row="4" RowDefinitions="Auto, Auto, *" Visibility="{x:Bind ViewModel.HasOverview, Mode=OneWay}">
+            <Grid Grid.Row="4" RowDefinitions="Auto, *" Visibility="{x:Bind ViewModel.HasOverview, Mode=OneWay}">
                 <!-- Counts -->
-                <Grid Grid.Row="1" Margin="0,0,0,12" ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
+                <Grid Margin="0,0,0,12" ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
                     <Button Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="containers" Click="OnStatCardClick"
                             AutomationProperties.Name="Open containers">
                         <StackPanel Orientation="Horizontal" Spacing="12">
@@ -234,7 +234,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="{x:Bind ViewModel.ContainersCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
                                     <TextBlock Text="{x:Bind ViewModel.ContainersText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
-                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               controls:Overflow.Shortens="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -251,7 +251,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="{x:Bind ViewModel.ImagesCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
                                     <TextBlock Text="{x:Bind ViewModel.ImagesText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
-                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               controls:Overflow.Shortens="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -268,7 +268,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="{x:Bind ViewModel.VolumesCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
                                     <TextBlock Text="{x:Bind ViewModel.VolumesText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
-                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               controls:Overflow.Shortens="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -286,7 +286,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="{x:Bind ViewModel.NetworksCount, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
                                     <TextBlock Text="{x:Bind ViewModel.NetworksText, Mode=OneWay}" VerticalAlignment="Bottom" Margin="0,0,0,3"
-                                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                               controls:Overflow.Shortens="True" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -294,7 +294,7 @@
                 </Grid>
 
                 <!-- The cards below take the rest of the window, so the chart grows with it -->
-                <Grid Grid.Row="2" ColumnSpacing="12" ColumnDefinitions="1.7*, *">
+                <Grid Grid.Row="1" ColumnSpacing="12" ColumnDefinitions="1.7*, *">
                     <!-- Resources -->
                     <Border Style="{StaticResource CardStyle}">
                         <Grid RowSpacing="10" RowDefinitions="Auto, Auto, *, Auto, Auto">
@@ -334,7 +334,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="vm:UsageBar">
                                                 <Grid ColumnSpacing="12" Padding="0,4" ColumnDefinitions="*, 72, 72">
-                                                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" controls:Overflow.Shortens="True" />
                                                     <Grid Grid.Column="1" Height="6" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(Share)}" />
@@ -357,7 +357,7 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="vm:UsageBar">
                                                 <Grid ColumnSpacing="12" Padding="0,4" ColumnDefinitions="*, 72, 72">
-                                                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" controls:Overflow.Shortens="True" />
                                                     <Grid Grid.Column="1" Height="6" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="{x:Bind vm:Bindings.Filled(Share)}" />
@@ -392,7 +392,7 @@
                                                 <HyperlinkButton Style="{StaticResource LinkTextButtonStyle}" Tag="{x:Bind Id}"
                                                                  Click="OnEndpointContainerClick"
                                                                  ToolTipService.ToolTip="Show container">
-                                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{x:Bind Name}" controls:Overflow.Shortens="True" />
                                                 </HyperlinkButton>
                                                 <controls:PortChips Grid.Column="1" Ports="{x:Bind Ports}" />
                                             </Grid>

@@ -1,5 +1,6 @@
 using System.Windows.Automation;
 using static WslcDesktop.UiTests.AppSession;
+using Rect = System.Windows.Rect;
 
 namespace WslcDesktop.UiTests;
 
@@ -98,6 +99,33 @@ public sealed class AppSmokeTests(AppSession app)
 
         Assert.Equal("NAME, sorted ascending", firstName);
         Assert.Equal("NAME, sorted descending", secondName);
+        AssertNoCrash();
+    }
+
+    [Theory(Skip = SkipReason, SkipUnless = nameof(Enabled), SkipType = typeof(AppSession))]
+    [InlineData("Dashboard", new[] { "Refresh" })]
+    [InlineData("Containers", new[] { "Stop all", "Remove stopped", "Refresh" })]
+    [InlineData("Images", new[] { "Pull", "Prune", "Refresh" })]
+    [InlineData("Volumes", new[] { "Prune", "Refresh" })]
+    [InlineData("Networks", new[] { "Remove unused", "Refresh" })]
+    public async Task Toolbar_ShowsEveryButton_AtTheMinimumWindowSize(string page, string[] buttons)
+    {
+        app.Navigate(page);
+        Assert.NotNull(await WaitForAsync(() => Find(app.Window, buttons[^1], ControlType.Button)));
+
+        await app.AtMinimumSizeAsync(() =>
+        {
+            Rect window = app.Window.Current.BoundingRectangle;
+            foreach (string name in buttons)
+            {
+                AutomationElement? button = Find(app.Window, name, ControlType.Button) ?? Find(app.Window, name);
+                Assert.NotNull(button);
+                Rect box = button.Current.BoundingRectangle;
+                Assert.False(button.Current.IsOffscreen, $"{name} is off screen.");
+                Assert.True(box.Left >= window.Left && box.Right <= window.Right, $"{name} is cut off by the window.");
+            }
+        });
+
         AssertNoCrash();
     }
 

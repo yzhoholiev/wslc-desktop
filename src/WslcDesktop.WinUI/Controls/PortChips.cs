@@ -45,7 +45,7 @@ public sealed partial class PortChips : StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Style = Resource<Style>("NeutralPillStyle"),
-                Child = new TextBlock { Text = port.Label, Style = Resource<Style>("PillTextStyle") }
+                Child = Shortening(new TextBlock { Text = port.Label, Style = Resource<Style>("PillTextStyle") })
             };
         }
 
@@ -53,22 +53,21 @@ public sealed partial class PortChips : StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Left,
             Style = Resource<Style>("ChipButtonStyle"),
-            Content = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                Children =
-                {
-                    new TextBlock { Text = port.Label },
-                    new FontIcon { Glyph = Glyphs.Open, FontSize = 9 }
-                }
-            }
+            Content = ShrinkingPair(
+                Shortening(new TextBlock { Text = port.Label }),
+                new FontIcon { Glyph = Glyphs.Open, FontSize = 9 })
         };
 
         ToolTipService.SetToolTip(chip, $"Open {url}");
         AutomationProperties.SetName(chip, $"Open {url}");
         chip.Click += (_, _) => App.Services.Shell.OpenUrl(url);
         return chip;
+    }
+
+    private static TextBlock Shortening(TextBlock text)
+    {
+        Overflow.SetShortens(text, true);
+        return text;
     }
 
     private void Rebuild()
@@ -105,12 +104,26 @@ public sealed partial class PortChips : StackPanel
         }
 
         // The overflow chip shares the last line, so a row never grows past two lines.
-        Children.Add(new StackPanel
+        Children.Add(ShrinkingPair(last, CreateOverflowChip(ports[MaxChips..])));
+    }
+
+    /// <summary>
+    ///     Two elements side by side, where a narrow column shortens the first and keeps the second whole.
+    /// </summary>
+    private static Grid ShrinkingPair(FrameworkElement first, FrameworkElement second)
+    {
+        Grid.SetColumn(second, 1);
+        return new Grid
         {
-            Orientation = Orientation.Horizontal,
-            Spacing = 4,
-            Children = { last, CreateOverflowChip(ports[MaxChips..]) }
-        });
+            HorizontalAlignment = HorizontalAlignment.Left,
+            ColumnSpacing = 4,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                new ColumnDefinition { Width = GridLength.Auto }
+            },
+            Children = { first, second }
+        };
     }
 
     private static Button CreateOverflowChip(PublishedPort[] hidden)

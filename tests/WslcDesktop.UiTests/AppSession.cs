@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Automation;
+using Rect = System.Windows.Rect;
 
 namespace WslcDesktop.UiTests;
 
@@ -12,6 +13,7 @@ public sealed partial class AppSession : IAsyncLifetime
 {
     private const string ProcessName = "WslcDesktop";
     private const uint WmClose = 0x0010;
+    private const uint KeepPositionAndOrder = 0x0002 | 0x0004 | 0x0010;
     private static readonly TimeSpan StartTimeout = TimeSpan.FromSeconds(60);
 
     private static readonly string DataDirectory = Path.Combine(
@@ -114,6 +116,25 @@ public sealed partial class AppSession : IAsyncLifetime
 
     public bool IsWindowVisible() => IsWindowVisible(MainWindowHandle());
 
+    /// <summary>
+    ///     Runs a check with the window as small as the app lets it be, then gives the window its size back.
+    /// </summary>
+    public async Task AtMinimumSizeAsync(Action check)
+    {
+        Rect before = Window.Current.BoundingRectangle;
+        Resize(1, 1);
+        try
+        {
+            // The rows are laid out again on the UI thread after the window has its new size.
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            check();
+        }
+        finally
+        {
+            Resize((int)before.Width, (int)before.Height);
+        }
+    }
+
     public void Navigate(string page)
     {
         AutomationElement item = Find(Window, page, ControlType.ListItem) ?? throw new InvalidOperationException($"No navigation item '{page}'.");
@@ -171,6 +192,8 @@ public sealed partial class AppSession : IAsyncLifetime
         return AppContext.BaseDirectory;
     }
 
+    private void Resize(int width, int height) => SetWindowPos(MainWindowHandle(), 0, 0, 0, width, height, KeepPositionAndOrder);
+
     private nint MainWindowHandle()
     {
         Process process = Process ?? throw new InvalidOperationException("The app is not running.");
@@ -180,6 +203,10 @@ public sealed partial class AppSession : IAsyncLifetime
 
     [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
     private static partial nint SendMessage(nint hWnd, uint message, nint wParam, nint lParam);
+
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowPos")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(nint hWnd, nint insertAfter, int x, int y, int width, int height, uint flags);
 
     [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
     [return: MarshalAs(UnmanagedType.Bool)]

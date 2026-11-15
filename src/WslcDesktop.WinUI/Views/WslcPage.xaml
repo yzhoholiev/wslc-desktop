@@ -67,7 +67,7 @@
                                 <Grid ColumnSpacing="12" Height="40" ColumnDefinitions="60, 2*, 120, 120">
                                     <TextBlock Text="{x:Bind Id}" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="1" Text="{x:Bind Name}" VerticalAlignment="Center"
-                                               Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                               Style="{StaticResource BodyStrongTextBlockStyle}" controls:Overflow.Shortens="True" />
                                     <TextBlock Grid.Column="2" Text="{x:Bind CreatorPid}" VerticalAlignment="Center"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">

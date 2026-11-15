@@ -10,8 +10,8 @@
         <Grid RowDefinitions="Auto, *">
             <Grid Padding="16,12,8,8" ColumnSpacing="8" ColumnDefinitions="*, Auto">
                 <StackPanel>
-                    <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"
+                    <TextBlock Text="{x:Bind Title, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" local:Overflow.Shortens="True" />
+                    <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" local:Overflow.Shortens="True"
                                IsTextSelectionEnabled="True" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">

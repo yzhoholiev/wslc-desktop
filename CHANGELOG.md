@@ -18,6 +18,7 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 - **The dashboard's attention banner** no longer shows stray buttons over "Hide" when it lists several items; clicking them closed the app.
 - The dismiss button of an attention item is as tall as the buttons beside it.
+- **Text that does not fit a list column** is shortened with an ellipsis everywhere, instead of wrapping in some columns and being cut off in others. The window's minimum width is larger, so the toolbar buttons stay visible.
 
 ## [1.1.0] - 2026-11-11
 

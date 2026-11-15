@@ -123,24 +123,27 @@
                                         </MenuFlyout>
                                     </controls:ClickableRow.ContextFlyout>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind Name}" controls:Overflow.Shortens="True"
+                                                   Style="{StaticResource BodyStrongTextBlockStyle}" />
                                         <TextBlock Text="{x:Bind ShortId}" FontFamily="{StaticResource MonoFont}"
-                                                   Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                   controls:Overflow.FullText="{x:Bind Id}" Style="{StaticResource CaptionTextBlockStyle}"
+                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     </StackPanel>
                                     <HyperlinkButton Grid.Column="1" Style="{StaticResource LinkTextButtonStyle}" Tag="{x:Bind}" Click="OnImageClick"
                                                      ToolTipService.ToolTip="Show image">
-                                        <TextBlock Text="{x:Bind Image}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{x:Bind Image}" controls:Overflow.Shortens="True" />
                                     </HyperlinkButton>
                                     <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="3">
                                         <Border Style="{x:Bind vm:Bindings.StatePillStyle(State), Mode=OneWay}">
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Grid ColumnSpacing="6" ColumnDefinitions="Auto, *">
                                                 <Ellipse Width="7" Height="7" VerticalAlignment="Center"
                                                          Style="{x:Bind vm:Bindings.StateDotStyle(State), Mode=OneWay}" />
-                                                <TextBlock Text="{x:Bind vm:Labels.StateLabel(State), Mode=OneWay}" Style="{StaticResource PillTextStyle}" />
-                                            </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{x:Bind vm:Labels.StateLabel(State), Mode=OneWay}"
+                                                           controls:Overflow.Shortens="True" Style="{StaticResource PillTextStyle}" />
+                                            </Grid>
                                         </Border>
                                         <TextBlock Text="{x:Bind Status, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
-                                                   TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                   controls:Overflow.Shortens="True" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                     </StackPanel>
                                     <controls:PortChips Grid.Column="3" Ports="{x:Bind Ports, Mode=OneWay}" />
                                     <TextBlock Grid.Column="4" Text="{x:Bind Cpu, Mode=OneWay}" VerticalAlignment="Center" />
@@ -181,7 +184,7 @@
                     <Grid Padding="16,12,8,0">
                         <StackPanel Spacing="2">
                             <TextBlock Text="{x:Bind ViewModel.Selected.Name, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}"
-                                       TextTrimming="CharacterEllipsis" />
+                                       controls:Overflow.Shortens="True" />
                             <StackPanel Orientation="Horizontal" Spacing="16">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="Image" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

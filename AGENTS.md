@@ -132,6 +132,15 @@ These fail only in the published AOT build, often with misleading errors:
 - Templates that use `x:Bind` and are shared by pages live in `Views/Templates.xaml` (a dictionary with a class behind it); `App.xaml` cannot hold them.
 - User-facing text: plain, sentence case, says what happens; destructive actions confirm first.
 
+### Lists and their views
+
+Every list, and the panels and cards beside it, behaves like the others. A change to how one handles overflow, hints, columns or its toolbar is made in all of them.
+
+- Text that may not fit sets `controls:Overflow.Shortens="True"`: one line, an ellipsis, and the whole text as a tooltip while it is shortened. Never `TextTrimming` or `TextWrapping` on a cell, and never a cell that wraps or is cut off without an ellipsis.
+- A cell that shows a short form of a value (a short ID, a display name) sets `controls:Overflow.FullText` to the whole value instead, which the tooltip shows even when the short form fits. No `ToolTipService.ToolTip` on a text cell.
+- Two elements on one line where one must stay whole (a name and its badge, a label and an icon) sit in a left-aligned `*, Auto` grid. A horizontal `StackPanel` gives its children unlimited width, so nothing in it can shorten.
+- The window's minimum width is what keeps every toolbar button visible; a toolbar that grows is checked at that width.
+
 ### Comments
 
 - Default to no comment; make names carry the meaning. A comment must answer a question the code raises: why this choice, where a magic value comes from, a gotcha (AOT, wslc behaviour, Windows quirks).

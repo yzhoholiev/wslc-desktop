@@ -29,15 +29,16 @@
                     </MenuFlyout>
                 </controls:ClickableRow.ContextFlyout>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind Name}" controls:Overflow.Shortens="True"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock Text="{x:Bind ShortId}" FontFamily="{StaticResource MonoFont}"
                                Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                               TextTrimming="CharacterEllipsis" />
+                               controls:Overflow.FullText="{x:Bind Id}" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{x:Bind Driver}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="2" Text="{x:Bind Kind}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                <TextBlock Grid.Column="1" Text="{x:Bind Driver}" VerticalAlignment="Center" controls:Overflow.Shortens="True" />
+                <TextBlock Grid.Column="2" Text="{x:Bind Kind}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Grid.Column="3" Text="{x:Bind Created}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                <TextBlock Grid.Column="3" Text="{x:Bind Created}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <controls:UsageChip Grid.Column="4" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
                 <StackPanel x:Name="RowActions" Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">

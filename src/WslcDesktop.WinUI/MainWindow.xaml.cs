@@ -35,7 +35,7 @@ public sealed partial class MainWindow
         string iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
 
         // Under Native AOT, AppWindow.Presenter cannot be downcast to OverlappedPresenter, so own a typed instance.
-        _presenter.PreferredMinimumWidth = 900;
+        _presenter.PreferredMinimumWidth = 1100;
         _presenter.PreferredMinimumHeight = 600;
         AppWindow.SetPresenter(_presenter);
 

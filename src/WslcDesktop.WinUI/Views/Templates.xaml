@@ -4,12 +4,13 @@
     x:Class="WslcDesktop.Views.Templates"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:WslcDesktop.Controls"
     xmlns:models="using:WslcDesktop.Models">
 
     <DataTemplate x:Key="KeyValueTemplate" x:DataType="models:KeyValueEntry">
         <Grid ColumnSpacing="12" Padding="0,3" ColumnDefinitions="170, *">
-            <TextBlock Text="{x:Bind Key}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="1" Text="{x:Bind Value}" IsTextSelectionEnabled="True" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{x:Bind Key}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" controls:Overflow.Shortens="True" />
+            <TextBlock Grid.Column="1" Text="{x:Bind Value}" IsTextSelectionEnabled="True" controls:Overflow.Shortens="True" />
         </Grid>
     </DataTemplate>
 </ResourceDictionary>

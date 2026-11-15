@@ -65,6 +65,8 @@
             <Style x:Key="PillTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
                 <Setter Property="FontSize" Value="11" />
                 <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             </Style>
 
             <!-- Colors picked in code as styles: a brush read from resources keeps its theme, a style setter follows theme and contrast changes -->
