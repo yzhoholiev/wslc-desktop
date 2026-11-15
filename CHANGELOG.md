@@ -4,6 +4,8 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-15
+
 ### Added
 
 - **In-app updates.** The app asks GitHub for a new version when it starts, and offers it in Settings, on the dashboard and in the notification area menu. **Update** downloads the new version, checks it against the release's checksums, installs it and restarts the app where it was. Nothing is downloaded until you choose Update, and the check can be turned off under Settings → About.
@@ -59,6 +61,7 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 The first release: dashboard, containers, images, volumes, networks, the WSL containers and WSL pages, the tray icon and the jump list.
 
-[Unreleased]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/yzhoholiev/wslc-desktop/releases/tag/v1.0.0
