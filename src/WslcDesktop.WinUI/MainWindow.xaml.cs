@@ -72,6 +72,8 @@ public sealed partial class MainWindow
 
         AppWindow.Closing += OnClosing;
         Services.Notifier.Notified += OnNotified;
+        Services.Updater.RestartRequested += OnRestartRequested;
+        Services.Updater.Changed += OnUpdaterChanged;
         Services.Monitor.Updated += OnRuntimeUpdated;
         Services.Monitor.PropertyChanged += OnMonitorPropertyChanged;
         Closed += (_, _) =>

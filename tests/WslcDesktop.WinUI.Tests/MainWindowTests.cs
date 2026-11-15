@@ -25,4 +25,13 @@ public sealed class MainWindowTests
             Assert.True(page is null || MainWindow.CommandForPage(page) == command);
         }
     }
+
+    [Theory]
+    [InlineData(true, "images", new[] { "--tray", "--updated" })]
+    [InlineData(false, "images", new[] { "--images", "--updated" })]
+    [InlineData(false, "wsl", new[] { "--wsl", "--updated" })]
+    [InlineData(false, "dashboard", new[] { "--updated" })]
+    [InlineData(false, "settings", new[] { "--updated" })]
+    public void RestartArguments_ReopenTheWindowAsItWas(bool isHidden, string tag, string[] expected) =>
+        Assert.Equal(expected, MainWindow.RestartArguments(isHidden, tag));
 }

@@ -87,10 +87,22 @@ public sealed partial class MainWindow
                 new TrayMenuItem("Edit .wslconfig", Services.Shell.OpenWslConfig, Glyph: Glyphs.Edit),
                 new TrayMenuItem("Distributions and sessions", () => ShowPage("wsl"), Glyph: Glyphs.Distributions)
             ], Glyph: Glyphs.Shell),
+            .. BuildUpdateItems(),
             new TrayMenuItem("Settings", () => ShowPage("settings"), Glyph: Glyphs.Settings),
             TrayMenuItem.Separator,
             new TrayMenuItem("Exit", () => _ = ExitApplicationAsync(), Glyph: Glyphs.Exit)
         ];
+    }
+
+    /// <summary>
+    ///     The entry for the app's own update, which is the only way to install it while no window is open.
+    /// </summary>
+    private TrayMenuItem[] BuildUpdateItems()
+    {
+        UpdateState state = Services.Updater.State;
+        return Labels.UpdateMenuText(state) is { } text
+            ? [new TrayMenuItem(text, () => _ = UpdateAppAsync(), state.Status != UpdateStatus.Downloading, Glyph: Glyphs.Update)]
+            : [];
     }
 
     private TrayMenuItem[] BuildContainerItems(RuntimeSnapshot snapshot)

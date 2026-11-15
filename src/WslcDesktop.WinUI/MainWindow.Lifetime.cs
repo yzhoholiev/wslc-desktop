@@ -96,6 +96,7 @@ public sealed partial class MainWindow
         }
 
         _isExiting = true;
+        Services.Updater.CancelInstall();
         try
         {
             // A programmatic Close() does not raise AppWindow.Closing, where placement is otherwise saved.

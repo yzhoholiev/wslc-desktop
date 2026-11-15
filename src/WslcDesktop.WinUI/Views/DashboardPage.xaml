@@ -15,7 +15,8 @@
                 <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Text="{x:Bind Subject}" />
                 <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{x:Bind Text}" />
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
-                    <Button Content="{x:Bind PrimaryAction}" Tag="{x:Bind}" Click="OnAttentionPrimaryClick" />
+                    <Button Content="{x:Bind PrimaryAction}" Tag="{x:Bind}" Click="OnAttentionPrimaryClick"
+                            Visibility="{x:Bind vm:Bindings.VisibleWhenAny(PrimaryAction)}" />
                     <Button Content="{x:Bind SecondaryAction}" Tag="{x:Bind}" Click="OnAttentionSecondaryClick"
                             Visibility="{x:Bind vm:Bindings.VisibleWhenAny(SecondaryAction)}" />
                     <Button Style="{StaticResource RowActionButtonStyle}" VerticalAlignment="Stretch" Tag="{x:Bind}" Click="OnAttentionDismissClick"
@@ -28,7 +29,7 @@
     </Page.Resources>
 
     <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
-        <Grid x:Name="PageContent" Padding="24,16,24,20" RowDefinitions="Auto, Auto, Auto, *">
+        <Grid x:Name="PageContent" Padding="24,16,24,20" RowDefinitions="Auto, Auto, Auto, Auto, *">
 
             <Grid Margin="0,0,0,12">
                 <StackPanel Spacing="4">
@@ -133,7 +134,7 @@
             </InfoBar>
 
             <!-- Before the first sample -->
-            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40"
+            <Border Grid.Row="4" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40"
                     Visibility="{x:Bind ViewModel.IsConnecting, Mode=OneWay}">
                 <StackPanel Spacing="12" HorizontalAlignment="Center">
                     <ProgressRing IsActive="{x:Bind ViewModel.IsConnecting, Mode=OneWay}" Width="28" Height="28" />
@@ -141,8 +142,40 @@
                 </StackPanel>
             </Border>
 
+            <!-- Attention, shown only while there is something to report; an app update shows whatever the runtime does -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,12" Visibility="{x:Bind ViewModel.HasAttention, Mode=OneWay}">
+                <Border Style="{x:Bind vm:Bindings.BannerStyle(ViewModel.AttentionTone), Mode=OneWay}">
+                    <Grid>
+                        <!-- A single item is shown itself, with its actions; without an item the template would still show its buttons, empty -->
+                        <ContentControl Content="{x:Bind ViewModel.SingleAttention, Mode=OneWay}" ContentTemplate="{StaticResource AttentionItemTemplate}"
+                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"
+                                        Visibility="{x:Bind ViewModel.HasSingleAttention, Mode=OneWay}" />
+                        <Grid ColumnSpacing="10" ColumnDefinitions="Auto, Auto, *, Auto" Visibility="{x:Bind ViewModel.HasAttentionList, Mode=OneWay}">
+                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                     Style="{x:Bind vm:Bindings.ToneDotStyle(ViewModel.AttentionTone), Mode=OneWay}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
+                                       Text="{x:Bind ViewModel.AttentionTitle, Mode=OneWay}" />
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       Text="{x:Bind ViewModel.AttentionSummary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                                <Button Content="Dismiss all" Command="{x:Bind ViewModel.DismissAllCommand}" />
+                                <Button Content="{x:Bind ViewModel.AttentionToggleText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleAttentionCommand}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Padding="16,6,8,8" Margin="0,4,0,0"
+                        Visibility="{x:Bind ViewModel.IsAttentionListVisible, Mode=OneWay}">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.AttentionItems}" ItemTemplate="{StaticResource AttentionItemTemplate}" />
+                        <HyperlinkButton Padding="0,4" Content="{x:Bind ViewModel.MoreAttentionText, Mode=OneWay}" Tag="containers" Click="OnStatCardClick"
+                                         Visibility="{x:Bind vm:Bindings.VisibleWhenAny(ViewModel.MoreAttentionText), Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
             <!-- Runtime stopped -->
-            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,48"
+            <Border Grid.Row="4" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,48"
                     Visibility="{x:Bind ViewModel.IsStopped, Mode=OneWay}">
                 <StackPanel Spacing="6" HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE7E8;" FontSize="36" Style="{StaticResource TertiaryIconStyle}" />
@@ -161,7 +194,7 @@
             </Border>
 
             <!-- Running, with nothing pulled or created yet -->
-            <Border Grid.Row="3" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40"
+            <Border Grid.Row="4" VerticalAlignment="Top" Style="{StaticResource CardStyle}" Padding="16,40"
                     Visibility="{x:Bind ViewModel.IsFirstRun, Mode=OneWay}">
                 <StackPanel Spacing="6" HorizontalAlignment="Center">
                     <TextBlock Text="Nothing here yet" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
@@ -185,39 +218,7 @@
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Row="3" RowDefinitions="Auto, Auto, *" Visibility="{x:Bind ViewModel.HasOverview, Mode=OneWay}">
-                <!-- Attention, shown only while there is something to report -->
-                <StackPanel Margin="0,0,0,12" Visibility="{x:Bind ViewModel.HasAttention, Mode=OneWay}">
-                    <Border Style="{x:Bind vm:Bindings.BannerStyle(ViewModel.AttentionTone), Mode=OneWay}">
-                        <Grid>
-                            <!-- A single item is shown itself, with its actions; without an item the template would still show its buttons, empty -->
-                            <ContentControl Content="{x:Bind ViewModel.SingleAttention, Mode=OneWay}" ContentTemplate="{StaticResource AttentionItemTemplate}"
-                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"
-                                            Visibility="{x:Bind ViewModel.HasSingleAttention, Mode=OneWay}" />
-                            <Grid ColumnSpacing="10" ColumnDefinitions="Auto, Auto, *, Auto" Visibility="{x:Bind ViewModel.HasAttentionList, Mode=OneWay}">
-                                <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                                         Style="{x:Bind vm:Bindings.ToneDotStyle(ViewModel.AttentionTone), Mode=OneWay}" />
-                                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
-                                           Text="{x:Bind ViewModel.AttentionTitle, Mode=OneWay}" />
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                           Text="{x:Bind ViewModel.AttentionSummary, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
-                                    <Button Content="Dismiss all" Command="{x:Bind ViewModel.DismissAllCommand}" />
-                                    <Button Content="{x:Bind ViewModel.AttentionToggleText, Mode=OneWay}" Command="{x:Bind ViewModel.ToggleAttentionCommand}" />
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                    <Border Style="{StaticResource CardStyle}" Padding="16,6,8,8" Margin="0,4,0,0"
-                            Visibility="{x:Bind ViewModel.IsAttentionListVisible, Mode=OneWay}">
-                        <StackPanel>
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.AttentionItems}" ItemTemplate="{StaticResource AttentionItemTemplate}" />
-                            <HyperlinkButton Padding="0,4" Content="{x:Bind ViewModel.MoreAttentionText, Mode=OneWay}" Tag="containers" Click="OnStatCardClick"
-                                             Visibility="{x:Bind vm:Bindings.VisibleWhenAny(ViewModel.MoreAttentionText), Mode=OneWay}" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
+            <Grid Grid.Row="4" RowDefinitions="Auto, Auto, *" Visibility="{x:Bind ViewModel.HasOverview, Mode=OneWay}">
                 <!-- Counts -->
                 <Grid Grid.Row="1" Margin="0,0,0,12" ColumnSpacing="12" ColumnDefinitions="*, *, *, *">
                     <Button Style="{StaticResource CardButtonStyle}" Padding="14,10" Tag="containers" Click="OnStatCardClick"

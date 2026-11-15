@@ -1,15 +1,49 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Reflection;
 using System.Security;
+using WslcDesktop.Models;
 using WslcDesktop.Services;
 
 namespace WslcDesktop.ViewModels;
 
 /// <summary>
-///     The settings page: the stored preferences, the start-with-Windows entry and the version shown in About.
+///     The settings page: the stored preferences, the start-with-Windows entry, the app's updates and the version shown in About.
 /// </summary>
-public sealed class SettingsViewModel(AppServices services)
+public sealed class SettingsViewModel(AppServices services) : ObservableObject
 {
+    private static readonly string[] UpdateProperties =
+    [
+        nameof(UpdateStatusText), nameof(CanCheck), nameof(CanUpdate), nameof(CanCancelUpdate), nameof(CanRestart), nameof(IsDownloading),
+        nameof(DownloadProgress)
+    ];
+
     private readonly ISettingsStore _settings = services.Settings;
+    private readonly AppUpdater _updater = services.Updater;
+
+    public bool CheckForUpdates
+    {
+        get => _settings.Current.CheckForUpdates;
+        set => Save(_settings.Current.CheckForUpdates, value, () => _settings.Current.CheckForUpdates = value);
+    }
+
+    public string UpdateStatusText => Labels.UpdateStatus(_updater.State);
+
+    public bool IsUpdateSectionEnabled => _updater.State.Status != UpdateStatus.Unavailable;
+
+    public bool CanCheck => _updater.State.Status is not (UpdateStatus.Unavailable or UpdateStatus.Checking or UpdateStatus.Downloading);
+
+    public bool CanUpdate => _updater.CanInstall;
+
+    public bool CanCancelUpdate => IsDownloading;
+
+    public bool CanRestart => _updater.State.Status == UpdateStatus.RestartRequired;
+
+    public bool IsDownloading => _updater.State.Status == UpdateStatus.Downloading;
+
+    /// <summary>
+    ///     The downloaded share of the update, from 0 to 100.
+    /// </summary>
+    public double DownloadProgress => Math.Clamp(_updater.State.Progress, 0, 1) * 100;
 
     public bool KeepRunningInTray
     {
@@ -82,9 +116,42 @@ public sealed class SettingsViewModel(AppServices services)
         return true;
     }
 
+    /// <summary>
+    ///     Follows the updater while the page is shown.
+    /// </summary>
+    public void Attach()
+    {
+        _updater.Changed -= OnUpdaterChanged;
+        _updater.Changed += OnUpdaterChanged;
+        OnUpdaterChanged();
+    }
+
+    public void Detach() => _updater.Changed -= OnUpdaterChanged;
+
+    public Task CheckNowAsync() => _updater.CheckAsync(true);
+
+    public Task UpdateAsync() => _updater.InstallAsync();
+
+    public void CancelUpdate() => _updater.CancelInstall();
+
+    public void Restart() => _updater.RequestRestart();
+
+    /// <summary>
+    ///     Opens the notes of the version on offer, or the list of releases when there is none.
+    /// </summary>
+    public void OpenReleasePage() => services.Shell.OpenUrl(_updater.State.Page ?? AppUpdater.ReleasesPage);
+
     public void OpenDataFolder() => services.Shell.OpenDataFolder();
 
     public void OpenLicenses() => services.Shell.OpenLicenses();
+
+    private void OnUpdaterChanged()
+    {
+        foreach (string property in UpdateProperties)
+        {
+            OnPropertyChanged(property);
+        }
+    }
 
     private void Save(bool current, bool value, Action set)
     {

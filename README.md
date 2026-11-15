@@ -41,7 +41,9 @@ Destructive actions always ask first. The **Live** switch in the title bar pause
 2. Download `WslcDesktop-win-x64.exe`, or `WslcDesktop-win-arm64.exe` on an Arm PC, from the [latest release](https://github.com/yzhoholiev/wslc-desktop/releases/latest). `SHA256SUMS.txt` lists their checksums.
 3. Put it anywhere and run it. There is no installer, MSIX or runtime to install.
 
-The download is one self-contained executable. On first run it unpacks the app to `%LOCALAPPDATA%\WslcDesktop\app\<content hash>` and starts it; later runs start it directly. To update, exit the app from the tray menu and replace the executable: the new version unpacks beside the old one, and versions that are no longer running are deleted. While the old version is still running, starting the new executable only brings the running window forward.
+The download is one self-contained executable. On first run it unpacks the app to `%LOCALAPPDATA%\WslcDesktop\app\<content hash>` and starts it; later runs start it directly.
+
+The app updates itself: when a newer release exists it says so in **Settings → About**, on the dashboard and in the tray menu, and **Update** downloads the new executable, checks its SHA-256 against the release's `SHA256SUMS.txt`, puts it in place of the one you started and restarts the app where it was, in the tray or on the same page. The runtime and its containers are left as they are. If the executable sits in a folder the app cannot write to, update by hand: exit the app from the tray menu and replace the executable. The new version unpacks beside the old one, and versions that are no longer running are deleted. While the old version is still running, starting the new executable only brings the running window forward.
 
 > [!NOTE]
 > The executable is not code-signed, so SmartScreen may warn on first run. Choose **More info → Run anyway**, or first compare `(Get-FileHash .\WslcDesktop-win-x64.exe).Hash` with its line in `SHA256SUMS.txt`. Smart App Control, when it is on, blocks unsigned apps outright and offers no way to run them.
@@ -108,7 +110,7 @@ Every push to `main` and every pull request builds, runs the unit tests and chec
 
 ## 🔒 Privacy
 
-WSLC Desktop collects no telemetry and makes no network requests of its own. It talks only to `wslc`, `wsl.exe` and the Docker Engine inside your wslc session; what those reach, such as a registry when you pull an image, is up to them. Links you click, such as a published port or the documentation, open in your browser.
+WSLC Desktop collects no telemetry. The only network request it makes of its own is the update check: when it starts and once a day it asks `api.github.com` for the latest release of this repository, sending nothing but the request and its own version in the user agent (`WslcDesktop/1.2.0`). GitHub sees your IP address, as any website you open does. Turn the check off under **Settings → About**; the app then contacts GitHub only when you choose **Check now** or **Update**. A download comes from GitHub's release storage and nowhere else. Otherwise the app talks only to `wslc`, `wsl.exe` and the Docker Engine inside your wslc session; what those reach, such as a registry when you pull an image, is up to them. Links you click, such as a published port or the documentation, open in your browser.
 
 ## 📄 License
 

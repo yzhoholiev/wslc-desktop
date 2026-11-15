@@ -1,4 +1,5 @@
 using WslcDesktop.Models;
+using WslcDesktop.Services;
 using WslcDesktop.ViewModels;
 using static WslcDesktop.Tests.Snapshots;
 
@@ -6,6 +7,45 @@ namespace WslcDesktop.Tests.ViewModels;
 
 public sealed class LabelsTests
 {
+    private static readonly AppVersion NextVersion = FakeInstalledApp.Version("1.2.0");
+
+    public static TheoryData<UpdateState, string> UpdateStatuses => new()
+    {
+        { new UpdateState(UpdateStatus.Unavailable), "Updates are available only in the released app." },
+        { new UpdateState(UpdateStatus.NotChecked), "Not checked yet" },
+        { new UpdateState(UpdateStatus.Checking), "Checking for updates…" },
+        { new UpdateState(UpdateStatus.UpToDate), "Up to date" },
+        { new UpdateState(UpdateStatus.Available, NextVersion), "Version 1.2.0 is available" },
+        { new UpdateState(UpdateStatus.Downloading, NextVersion, 0.4), "Downloading… 40%" },
+        { new UpdateState(UpdateStatus.RestartRequired, NextVersion), "Restart to finish updating to 1.2.0" },
+        { new UpdateState(UpdateStatus.Failed, NextVersion, Message: "GitHub is not reachable."), "GitHub is not reachable." }
+    };
+
+    public static TheoryData<UpdateState, string?> UpdateMenuTexts => new()
+    {
+        { new UpdateState(UpdateStatus.Unavailable), null },
+        { new UpdateState(UpdateStatus.NotChecked), null },
+        { new UpdateState(UpdateStatus.Checking), null },
+        { new UpdateState(UpdateStatus.UpToDate), null },
+        { new UpdateState(UpdateStatus.Failed, Message: "GitHub is not reachable."), null },
+        { new UpdateState(UpdateStatus.Available, NextVersion), "Update to 1.2.0" },
+        { new UpdateState(UpdateStatus.Failed, NextVersion, Message: "No."), "Update to 1.2.0" },
+        { new UpdateState(UpdateStatus.Downloading, NextVersion, 0.4), "Downloading update… 40%" },
+        { new UpdateState(UpdateStatus.RestartRequired, NextVersion), "Restart to finish updating" }
+    };
+
+    [Theory]
+    [MemberData(nameof(UpdateStatuses))]
+    public void UpdateStatus_DescribesEveryState(UpdateState state, string expected) => Assert.Equal(expected, Labels.UpdateStatus(state));
+
+    [Fact]
+    public void UpdateStatus_CoversEveryStatus() =>
+        Assert.Equal(Enum.GetValues<UpdateStatus>().Order(), UpdateStatuses.Select(row => row.Data.Item1.Status).Order());
+
+    [Theory]
+    [MemberData(nameof(UpdateMenuTexts))]
+    public void UpdateMenuText_OffersWhatCanBeDone(UpdateState state, string? expected) => Assert.Equal(expected, Labels.UpdateMenuText(state));
+
     [Theory]
     [InlineData("running", "Running")]
     [InlineData("exited", "Exited")]

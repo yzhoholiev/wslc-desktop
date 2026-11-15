@@ -8,7 +8,10 @@ public enum AttentionKind
 {
     ContainerFailed,
     ContainerRestarting,
-    UnusedImages
+    UnusedImages,
+    AppUpdate,
+    AppUpdating,
+    AppRestart
 }
 
 /// <summary>
@@ -24,7 +27,14 @@ public sealed record AttentionItem(AttentionKind Kind, string Key, string Contai
 {
     public string Tone => Kind == AttentionKind.ContainerFailed ? "Critical" : "Caution";
 
-    public string PrimaryAction => Kind == AttentionKind.UnusedImages ? "Clean up…" : "Logs";
+    public string PrimaryAction => Kind switch
+    {
+        AttentionKind.UnusedImages => "Clean up…",
+        AttentionKind.AppUpdate => "Update",
+        AttentionKind.AppRestart => "Restart",
+        AttentionKind.AppUpdating => "",
+        _ => "Logs"
+    };
 
     public string SecondaryAction => Kind switch
     {
@@ -34,9 +44,14 @@ public sealed record AttentionItem(AttentionKind Kind, string Key, string Contai
     };
 
     /// <summary>
-    ///     A restart loop is still happening, so it stays until it ends.
+    ///     A restart loop or a download is still happening, so it stays until it ends.
     /// </summary>
-    public bool CanDismiss => Kind != AttentionKind.ContainerRestarting;
+    public bool CanDismiss => Kind is not (AttentionKind.ContainerRestarting or AttentionKind.AppUpdating);
+
+    /// <summary>
+    ///     Whether the item is about the app itself rather than the runtime, and so is shown whatever the runtime's state.
+    /// </summary>
+    public bool IsAboutApp => Kind is AttentionKind.AppUpdate or AttentionKind.AppUpdating or AttentionKind.AppRestart;
 }
 
 /// <summary>
@@ -45,6 +60,11 @@ public sealed record AttentionItem(AttentionKind Kind, string Key, string Contai
 public static partial class DashboardAttention
 {
     public const string UnusedImagesKey = "unused-images";
+
+    /// <summary>
+    ///     Starts the key of an app update's item, followed by its version, so that a dismissal lasts until a newer version.
+    /// </summary>
+    public const string UpdateKeyPrefix = "update:";
 
     /// <summary>
     ///     Exit codes of a container that ended normally: 0, and the 137 and 143 a stop leaves behind (SIGKILL and SIGTERM).
@@ -93,6 +113,27 @@ public static partial class DashboardAttention
     }
 
     /// <summary>
+    ///     The item for the app's own update, or null when there is nothing to install or the user dismissed that version.
+    /// </summary>
+    public static AttentionItem? ForUpdate(UpdateState state, IReadOnlyDictionary<string, long> dismissed)
+    {
+        if (state.Version is not { } version || dismissed.ContainsKey(UpdateKeyPrefix + version))
+        {
+            return null;
+        }
+
+        (AttentionKind Kind, string Text)? item = state.Status switch
+        {
+            UpdateStatus.Available or UpdateStatus.Failed => (AttentionKind.AppUpdate, $"WSLC Desktop {version} is available"),
+            UpdateStatus.Downloading => (AttentionKind.AppUpdating, $"Downloading WSLC Desktop {version}… {(int)Math.Round(state.Progress * 100)}%"),
+            UpdateStatus.RestartRequired => (AttentionKind.AppRestart, $"Restart to finish updating to {version}"),
+            _ => null
+        };
+
+        return item is { } found ? new AttentionItem(found.Kind, UpdateKeyPrefix + version, "", "", found.Text, 1) : null;
+    }
+
+    /// <summary>
     ///     Drops dismissals of containers that run again or are gone, so their next failure is reported.
     /// </summary>
     /// <returns>Whether any dismissal was dropped.</returns>
@@ -102,7 +143,10 @@ public static partial class DashboardAttention
             .Where(container => FailureOf(container, snapshot.Vm?.Uptime) is not null)
             .Select(container => container.Id)
             .ToHashSet();
-        List<string> stale = [.. dismissed.Keys.Where(key => key != UnusedImagesKey && !failed.Contains(key))];
+        List<string> stale =
+        [
+            .. dismissed.Keys.Where(key => key != UnusedImagesKey && !key.StartsWith(UpdateKeyPrefix, StringComparison.Ordinal) && !failed.Contains(key))
+        ];
         foreach (string key in stale)
         {
             dismissed.Remove(key);
@@ -132,6 +176,16 @@ public static partial class DashboardAttention
         if (items.FirstOrDefault(item => item.Kind == AttentionKind.UnusedImages) is { } images)
         {
             parts.Add($"{ByteSize.Format(images.Value)} reclaimable");
+        }
+
+        if (items.Any(item => item.Kind is AttentionKind.AppUpdate or AttentionKind.AppUpdating))
+        {
+            parts.Add("app update available");
+        }
+
+        if (items.Any(item => item.Kind == AttentionKind.AppRestart))
+        {
+            parts.Add("restart to finish updating");
         }
 
         return string.Join(" · ", parts);

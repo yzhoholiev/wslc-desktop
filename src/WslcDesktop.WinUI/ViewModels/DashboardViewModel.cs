@@ -313,6 +313,17 @@ public sealed partial class DashboardViewModel : PageViewModel
         return RunAndReloadAsync(operation.Description, operation.Run, operation.SuccessMessage);
     }
 
+    /// <summary>
+    ///     Installs the app update on offer, or restarts into one that is already installed.
+    /// </summary>
+    public async Task UpdateAppAsync()
+    {
+        if (await Services.Updater.UpdateAsync() is { } failure)
+        {
+            Services.Notifier.Error("Could not update WSLC Desktop", failure);
+        }
+    }
+
     public Task ShutdownWslAsync() => RunOperationAsync("Shutting down WSL", Services.Actions.ShutdownWslAsync, "WSL has been shut down.");
 
     public CleanupSummary GetCleanupSummary()
@@ -350,6 +361,15 @@ public sealed partial class DashboardViewModel : PageViewModel
     {
         foreach (AttentionItem item in items.Where(item => item.CanDismiss))
         {
+            if (item.IsAboutApp)
+            {
+                // Only the newest version can be on offer, so dismissals of older ones are never read again.
+                foreach (string older in Dismissed.Keys.Where(key => key.StartsWith(DashboardAttention.UpdateKeyPrefix, StringComparison.Ordinal)).ToList())
+                {
+                    Dismissed.Remove(older);
+                }
+            }
+
             Dismissed[item.Key] = item.Value;
         }
 
@@ -359,12 +379,14 @@ public sealed partial class DashboardViewModel : PageViewModel
 
     private void ApplyAttention(RuntimeSnapshot snapshot)
     {
-        _attention = snapshot.IsRunning ? DashboardAttention.Build(snapshot, Dismissed) : [];
+        AttentionItem[] runtime = snapshot.IsRunning ? DashboardAttention.Build(snapshot, Dismissed) : [];
+        AttentionItem[] app = DashboardAttention.ForUpdate(Services.Updater.State, Dismissed) is { } update ? [update] : [];
+        _attention = [.. app, .. runtime];
         SingleAttention = _attention.Length == 1 ? _attention[0] : null;
         HasAttentionList = _attention.Length > 1;
 
-        List<AttentionItem> containers = [.. _attention.Where(item => item.Kind != AttentionKind.UnusedImages)];
-        AttentionItem[] shown = [.. containers.Take(MaxAttentionContainers), .. _attention.Where(item => item.Kind == AttentionKind.UnusedImages)];
+        List<AttentionItem> containers = [.. runtime.Where(item => item.Kind != AttentionKind.UnusedImages)];
+        AttentionItem[] shown = [.. app, .. containers.Take(MaxAttentionContainers), .. runtime.Where(item => item.Kind == AttentionKind.UnusedImages)];
         AttentionItems.ReplaceWith(shown);
         int more = containers.Count - MaxAttentionContainers;
         MoreAttentionText = more > 0 ? $"{Humanize.Count(more, "more container")} · show them on the Containers page" : "";

@@ -21,7 +21,12 @@ public sealed partial class DashboardPage
         ViewModel = new DashboardViewModel(services);
         InitializeComponent();
         this.FollowMonitor(services.Monitor, OnRuntimeUpdated);
-        Loaded += (_, _) => OnRuntimeUpdated();
+        Loaded += (_, _) =>
+        {
+            services.Updater.Changed += OnRuntimeUpdated;
+            OnRuntimeUpdated();
+        };
+        Unloaded += (_, _) => services.Updater.Changed -= OnRuntimeUpdated;
 
         // A ScrollViewer gives its content unbounded height; this lets the last row fill the window and still scroll when it is short.
         Scroller.SizeChanged += (_, e) => PageContent.MinHeight = e.NewSize.Height;
@@ -133,13 +138,18 @@ public sealed partial class DashboardPage
     private void OnAttentionDismissClick(object sender, RoutedEventArgs e) => ViewModel.Dismiss(sender.TagOf<AttentionItem>());
 
     /// <summary>
-    ///     Opens the logs of the container an item is about, or the cleanup dialog for reclaimable space.
+    ///     Opens the logs of the container an item is about, the cleanup dialog for reclaimable space, or the app's update.
     /// </summary>
     private Task RunPrimaryAsync(AttentionItem item)
     {
         if (item.Kind == AttentionKind.UnusedImages)
         {
             return CleanupAsync(UnusedImagesOnly);
+        }
+
+        if (item.IsAboutApp)
+        {
+            return ViewModel.UpdateAppAsync();
         }
 
         App.Window.ShowContainer(item.ContainerId);

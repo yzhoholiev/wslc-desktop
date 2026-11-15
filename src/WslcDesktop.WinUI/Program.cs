@@ -13,6 +13,8 @@ public static class Program
     /// </summary>
     private static readonly string InstanceMutexName = $@"Local\WslcDesktop.SingleInstance{Elevation.InstanceSuffix}";
 
+    private static Mutex? _instanceMutex;
+
     public static uint ActivateMessage { get; } = WindowMessages.Register($"WslcDesktop.Activate{Elevation.InstanceSuffix}");
 
     [STAThread]
@@ -23,8 +25,7 @@ public static class Program
         LaunchCommand command = LaunchCommands.Parse(args);
         AppIdentity.Register();
 
-        using var instanceMutex = new Mutex(true, InstanceMutexName, out bool isFirstInstance);
-        if (!isFirstInstance)
+        if (!TakeInstance())
         {
             if (startInTray)
             {
@@ -39,9 +40,45 @@ public static class Program
         }
 
         App.StartInTray = startInTray;
+        App.IsUpdateRestart = args.Contains(LaunchCommands.UpdatedArgument, StringComparer.OrdinalIgnoreCase);
         App.Command = command;
         XamlGeneratedProgram.XamlGeneratedMain();
+        ReleaseInstance();
 
         return 0;
+    }
+
+    /// <summary>
+    ///     Makes this process the single instance, and returns false when another one already is.
+    /// </summary>
+    public static bool TakeInstance()
+    {
+        if (_instanceMutex is not null)
+        {
+            return true;
+        }
+
+        var mutex = new Mutex(true, InstanceMutexName, out bool isFirstInstance);
+        if (!isFirstInstance)
+        {
+            mutex.Dispose();
+            return false;
+        }
+
+        _instanceMutex = mutex;
+        return true;
+    }
+
+    /// <summary>
+    ///     Lets the next launch become the instance, for a restart that replaces this process.
+    /// </summary>
+    public static void ReleaseInstance()
+    {
+        if (Interlocked.Exchange(ref _instanceMutex, null) is { } mutex)
+        {
+            // A mutex belongs to the thread that took it, which is the main thread here and in TakeInstance.
+            mutex.ReleaseMutex();
+            mutex.Dispose();
+        }
     }
 }

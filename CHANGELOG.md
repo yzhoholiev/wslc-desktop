@@ -4,6 +4,10 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+### Added
+
+- **In-app updates.** The app asks GitHub for a new version when it starts and once a day, and offers it in Settings, on the dashboard and in the notification area menu. **Update** downloads the new version, checks it against the release's checksums, installs it and restarts the app where it was. Nothing is downloaded until you choose Update, and the check can be turned off under Settings → About.
+
 ### Changed
 
 - **Published ports show the hand cursor**, like other links.

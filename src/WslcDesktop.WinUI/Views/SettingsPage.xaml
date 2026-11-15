@@ -77,12 +77,43 @@
             <TextBlock Text="About" Style="{StaticResource SettingGroupStyle}" />
 
             <Border Style="{StaticResource SettingRowStyle}">
-                <Grid ColumnSpacing="24" ColumnDefinitions="*, Auto">
+                <Grid ColumnSpacing="24" RowSpacing="8" ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
                     <StackPanel VerticalAlignment="Center" Spacing="2">
                         <TextBlock x:Name="VersionText" Text="{x:Bind ViewModel.VersionText}" IsTextSelectionEnabled="True" />
-                        <TextBlock x:Name="WslcPathText" Text="{x:Bind ViewModel.WslcPathText}" IsTextSelectionEnabled="True"
-                                   Style="{StaticResource SettingDescriptionStyle}" />
+                        <TextBlock x:Name="UpdateStatusText" Text="{x:Bind ViewModel.UpdateStatusText, Mode=OneWay}"
+                                   AutomationProperties.LiveSetting="Polite" Style="{StaticResource SettingDescriptionStyle}" />
                     </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                        <HyperlinkButton Content="What&#x2019;s new" ToolTipService.ToolTip="Opens the release notes on GitHub"
+                                         Click="OnOpenReleasePageClick" />
+                        <Button x:Name="CheckNowButton" Content="Check now" IsEnabled="{x:Bind ViewModel.CanCheck, Mode=OneWay}"
+                                Click="OnCheckNowClick" />
+                        <Button x:Name="CancelUpdateButton" Content="Cancel" Visibility="{x:Bind ViewModel.CanCancelUpdate, Mode=OneWay}"
+                                Click="OnCancelUpdateClick" />
+                        <Button x:Name="UpdateButton" Content="Update" Style="{StaticResource AccentButtonStyle}"
+                                ToolTipService.ToolTip="Downloads the new version, installs it and restarts WSLC Desktop"
+                                Visibility="{x:Bind ViewModel.CanUpdate, Mode=OneWay}" Click="OnUpdateClick" />
+                        <Button x:Name="RestartButton" Content="Restart" Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{x:Bind ViewModel.CanRestart, Mode=OneWay}" Click="OnRestartClick" />
+                    </StackPanel>
+                    <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" AutomationProperties.Name="Update download"
+                                 Value="{x:Bind ViewModel.DownloadProgress, Mode=OneWay}"
+                                 Visibility="{x:Bind ViewModel.IsDownloading, Mode=OneWay}" />
+                </Grid>
+            </Border>
+
+            <controls:SettingRow
+                Title="Check for updates automatically"
+                Description="Asks GitHub for the latest release when the app starts and once a day. Nothing is downloaded until you choose Update."
+                IsEnabled="{x:Bind ViewModel.IsUpdateSectionEnabled}">
+                <ToggleSwitch x:Name="CheckForUpdatesSwitch" AutomationProperties.Name="Check for updates automatically"
+                              IsOn="{x:Bind ViewModel.CheckForUpdates, Mode=TwoWay}" />
+            </controls:SettingRow>
+
+            <Border Style="{StaticResource SettingRowStyle}">
+                <Grid ColumnSpacing="24" ColumnDefinitions="*, Auto">
+                    <TextBlock x:Name="WslcPathText" Text="{x:Bind ViewModel.WslcPathText}" VerticalAlignment="Center"
+                               IsTextSelectionEnabled="True" Style="{StaticResource SettingDescriptionStyle}" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
                         <HyperlinkButton
                             Content="Licenses"

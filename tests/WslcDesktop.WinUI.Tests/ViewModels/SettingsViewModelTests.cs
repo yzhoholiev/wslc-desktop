@@ -1,3 +1,4 @@
+using WslcDesktop.Models;
 using WslcDesktop.Services;
 using WslcDesktop.ViewModels;
 
@@ -6,6 +7,123 @@ namespace WslcDesktop.Tests.ViewModels;
 public sealed class SettingsViewModelTests
 {
     private readonly TestServices _test = new();
+
+    [Fact]
+    public async Task UpdateStatusText_FollowsTheUpdater()
+    {
+        _test.Releases.Latest = Release("1.2.0");
+        var viewModel = new SettingsViewModel(_test.Services);
+        List<string?> changed = [];
+        viewModel.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+        viewModel.Attach();
+        Assert.Equal("Not checked yet", viewModel.UpdateStatusText);
+        Assert.False(viewModel.CanUpdate);
+
+        await viewModel.CheckNowAsync();
+
+        Assert.Equal("Version 1.2.0 is available", viewModel.UpdateStatusText);
+        Assert.True(viewModel.CanUpdate);
+        Assert.True(viewModel.CanCheck);
+        Assert.False(viewModel.CanRestart);
+        Assert.Contains(nameof(SettingsViewModel.UpdateStatusText), changed);
+        Assert.Contains(nameof(SettingsViewModel.CanUpdate), changed);
+
+        viewModel.Detach();
+        changed.Clear();
+        await viewModel.CheckNowAsync();
+        Assert.Empty(changed);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_InstallsAndOffersTheRestart()
+    {
+        _test.Releases.Latest = Release("1.2.0");
+        _test.Releases.Checksums = $"{Hash}  WslcDesktop-win-x64.exe";
+        _test.Installed.DownloadedSize = 1000;
+        _test.Installed.DownloadedSha256 = Hash;
+        var viewModel = new SettingsViewModel(_test.Services);
+        viewModel.Attach();
+        await viewModel.CheckNowAsync();
+
+        await viewModel.UpdateAsync();
+
+        Assert.Single(_test.Installed.Installed);
+        Assert.True(viewModel.CanRestart);
+        Assert.False(viewModel.CanUpdate);
+        Assert.Equal("Restart to finish updating to 1.2.0", viewModel.UpdateStatusText);
+    }
+
+    [Fact]
+    public async Task Download_ShowsProgressAndCanBeCancelled()
+    {
+        _test.Releases.Latest = Release("1.2.0");
+        _test.Releases.Checksums = $"{Hash}  WslcDesktop-win-x64.exe";
+        _test.Releases.Progress = [0.4];
+        _test.Releases.PendingDownload = new TaskCompletionSource();
+        var viewModel = new SettingsViewModel(_test.Services);
+        viewModel.Attach();
+        await viewModel.CheckNowAsync();
+
+        Task update = viewModel.UpdateAsync();
+
+        Assert.True(viewModel.IsDownloading);
+        Assert.True(viewModel.CanCancelUpdate);
+        Assert.False(viewModel.CanCheck);
+        Assert.False(viewModel.CanUpdate);
+        Assert.Equal(40, viewModel.DownloadProgress);
+
+        viewModel.CancelUpdate();
+        await update;
+
+        Assert.False(viewModel.IsDownloading);
+        Assert.True(viewModel.CanUpdate);
+    }
+
+    [Fact]
+    public void UpdateSection_IsDisabled_WithoutALauncher()
+    {
+        var viewModel = new SettingsViewModel(new TestServices(false).Services);
+
+        Assert.False(viewModel.IsUpdateSectionEnabled);
+        Assert.False(viewModel.CanCheck);
+        Assert.Equal("Updates are available only in the released app.", viewModel.UpdateStatusText);
+    }
+
+    [Fact]
+    public void CheckForUpdates_IsOnByDefaultAndSaved()
+    {
+        var viewModel = new SettingsViewModel(_test.Services);
+        Assert.True(viewModel.CheckForUpdates);
+
+        viewModel.CheckForUpdates = false;
+
+        Assert.False(_test.Settings.Current.CheckForUpdates);
+        Assert.Equal(1, _test.Settings.Saves);
+    }
+
+    [Fact]
+    public async Task OpenReleasePage_OpensTheReleaseOfTheOfferedVersion()
+    {
+        var viewModel = new SettingsViewModel(_test.Services);
+        viewModel.OpenReleasePage();
+        _test.Releases.Latest = Release("1.2.0");
+        await viewModel.CheckNowAsync();
+
+        viewModel.OpenReleasePage();
+
+        Assert.Equal(
+            ["url https://github.com/yzhoholiev/wslc-desktop/releases", "url https://github.com/yzhoholiev/wslc-desktop/releases/tag/v1.2.0"],
+            _test.Shell.Opened);
+    }
+
+    private const string Hash = "ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12cd34ef56ab12";
+
+    private static AppRelease Release(string version) => new(
+        FakeInstalledApp.Version(version),
+        new Uri($"https://github.com/yzhoholiev/wslc-desktop/releases/tag/v{version}"),
+        new Uri($"https://github.com/yzhoholiev/wslc-desktop/releases/download/v{version}/WslcDesktop-win-x64.exe"),
+        1000,
+        new Uri($"https://github.com/yzhoholiev/wslc-desktop/releases/download/v{version}/SHA256SUMS.txt"));
 
     [Fact]
     public void Toggles_SaveOnlyWhatChanged()
