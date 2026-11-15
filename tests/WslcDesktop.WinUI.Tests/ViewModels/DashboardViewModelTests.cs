@@ -81,6 +81,20 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void Apply_ShowsTheSingleItemOnlyWhileThereIsExactlyOne()
+    {
+        var viewModel = new DashboardViewModel(_test.Services);
+
+        viewModel.Apply(Running(Failed("api")));
+        bool withOne = viewModel.HasSingleAttention;
+        viewModel.Apply(Running(Failed("api"), Failed("worker")));
+
+        Assert.True(withOne);
+        Assert.False(viewModel.HasSingleAttention);
+        Assert.True(viewModel.HasAttentionList);
+    }
+
+    [Fact]
     public void Apply_ListsAtMostFourContainersAndLeavesTheRestToTheContainersPage()
     {
         var viewModel = new DashboardViewModel(_test.Services);

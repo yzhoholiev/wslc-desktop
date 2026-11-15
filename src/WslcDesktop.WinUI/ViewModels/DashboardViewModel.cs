@@ -100,7 +100,10 @@ public sealed partial class DashboardViewModel : PageViewModel
     ///     The only attention item, which the banner then shows itself in place of a summary.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSingleAttention))]
     public partial AttentionItem? SingleAttention { get; set; }
+
+    public bool HasSingleAttention => SingleAttention is not null;
 
     /// <summary>
     ///     Whether there are several attention items, which the banner summarizes and lists on request.

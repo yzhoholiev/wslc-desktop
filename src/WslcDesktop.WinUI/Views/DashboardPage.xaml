@@ -18,7 +18,7 @@
                     <Button Content="{x:Bind PrimaryAction}" Tag="{x:Bind}" Click="OnAttentionPrimaryClick" />
                     <Button Content="{x:Bind SecondaryAction}" Tag="{x:Bind}" Click="OnAttentionSecondaryClick"
                             Visibility="{x:Bind vm:Bindings.VisibleWhenAny(SecondaryAction)}" />
-                    <Button Style="{StaticResource RowActionButtonStyle}" Tag="{x:Bind}" Click="OnAttentionDismissClick"
+                    <Button Style="{StaticResource RowActionButtonStyle}" VerticalAlignment="Stretch" Tag="{x:Bind}" Click="OnAttentionDismissClick"
                             ToolTipService.ToolTip="Dismiss" AutomationProperties.Name="Dismiss" Visibility="{x:Bind CanDismiss}">
                         <FontIcon Glyph="&#xE711;" FontSize="12" />
                     </Button>
@@ -190,9 +190,10 @@
                 <StackPanel Margin="0,0,0,12" Visibility="{x:Bind ViewModel.HasAttention, Mode=OneWay}">
                     <Border Style="{x:Bind vm:Bindings.BannerStyle(ViewModel.AttentionTone), Mode=OneWay}">
                         <Grid>
-                            <!-- A single item is shown itself, with its actions -->
+                            <!-- A single item is shown itself, with its actions; without an item the template would still show its buttons, empty -->
                             <ContentControl Content="{x:Bind ViewModel.SingleAttention, Mode=OneWay}" ContentTemplate="{StaticResource AttentionItemTemplate}"
-                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" />
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center"
+                                            Visibility="{x:Bind ViewModel.HasSingleAttention, Mode=OneWay}" />
                             <Grid ColumnSpacing="10" ColumnDefinitions="Auto, Auto, *, Auto" Visibility="{x:Bind ViewModel.HasAttentionList, Mode=OneWay}">
                                 <Ellipse Width="8" Height="8" VerticalAlignment="Center"
                                          Style="{x:Bind vm:Bindings.ToneDotStyle(ViewModel.AttentionTone), Mode=OneWay}" />

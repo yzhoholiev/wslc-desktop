@@ -10,6 +10,10 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 - **The download is smaller**, about 20 MB instead of 27 MB.
 - **Containers that were running when the runtime stopped** are no longer reported as failed on the dashboard after the next start.
 
+### Fixed
+
+- **The dashboard's attention banner** no longer shows stray buttons over "Hide" when it lists several items; clicking them closed the app.
+- The dismiss button of an attention item is as tall as the buttons beside it.
 
 ## [1.1.0] - 2026-11-11
 
