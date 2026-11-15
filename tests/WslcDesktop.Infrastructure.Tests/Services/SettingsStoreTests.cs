@@ -32,6 +32,39 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void Save_KeepsTheUpdateFields()
+    {
+        var store = new SettingsStore(_file);
+        var checkedAt = new DateTimeOffset(2026, 11, 15, 9, 30, 0, TimeSpan.Zero);
+        store.Current.CheckForUpdates = false;
+        store.Current.LastUpdateCheck = checkedAt;
+        store.Current.AvailableUpdate = "1.2.0";
+        store.Current.AnnouncedUpdate = "1.2.0-rc.1";
+
+        store.Save();
+        AppSettings reloaded = new SettingsStore(_file).Current;
+
+        Assert.False(reloaded.CheckForUpdates);
+        Assert.Equal(checkedAt, reloaded.LastUpdateCheck);
+        Assert.Equal("1.2.0", reloaded.AvailableUpdate);
+        Assert.Equal("1.2.0-rc.1", reloaded.AnnouncedUpdate);
+    }
+
+    [Fact]
+    public void Current_TurnsAutomaticChecksOn_ForSettingsWrittenBeforeTheyExisted()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+        File.WriteAllText(_file, """{ "KeepRunningInTray": false }""");
+
+        AppSettings settings = new SettingsStore(_file).Current;
+
+        Assert.False(settings.KeepRunningInTray);
+        Assert.True(settings.CheckForUpdates);
+        Assert.Null(settings.LastUpdateCheck);
+        Assert.Null(settings.AvailableUpdate);
+    }
+
+    [Fact]
     public void Save_RoundTripsEverySetting()
     {
         var store = new SettingsStore(_file);

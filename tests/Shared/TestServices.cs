@@ -8,9 +8,10 @@ namespace WslcDesktop.Tests;
 /// </summary>
 internal sealed class TestServices
 {
-    public TestServices()
+    public TestServices(bool hasLauncher = true)
     {
-        Services = new AppServices(Reader, Session, Commands, Details, Hosts, Wsl, WslConfig, WslcSettings, Shell, Settings, Notifier);
+        Installed.HasLauncher = hasLauncher;
+        Services = new AppServices(Reader, Session, Commands, Details, Hosts, Wsl, WslConfig, WslcSettings, Shell, Settings, Releases, Installed, Notifier);
     }
 
     public FakeRuntimeReader Reader { get; } = new();
@@ -32,6 +33,10 @@ internal sealed class TestServices
     public FakeShellLauncher Shell { get; } = new();
 
     public InMemorySettings Settings { get; } = new();
+
+    public FakeReleaseFeed Releases { get; } = new();
+
+    public FakeInstalledApp Installed { get; } = new();
 
     public Notifier Notifier { get; } = new();
 
@@ -344,3 +349,109 @@ internal sealed class InMemorySettings : ISettingsStore
 
     public void Save() => Saves++;
 }
+
+internal sealed class FakeReleaseFeed : IReleaseFeed
+{
+    public AppRelease? Latest { get; set; }
+
+    public string Checksums { get; set; } = "";
+
+    public Exception? Failure { get; set; }
+
+    public Exception? DownloadFailure { get; set; }
+
+    /// <summary>
+    ///     Whether each lookup asked for pre-releases too.
+    /// </summary>
+    public List<bool> Requests { get; } = [];
+
+    public List<string> Downloads { get; } = [];
+
+    /// <summary>
+    ///     Reported before the download ends, as fractions of the whole.
+    /// </summary>
+    public double[] Progress { get; set; } = [];
+
+    /// <summary>
+    ///     Holds the download until completed, to test what happens while one runs.
+    /// </summary>
+    public TaskCompletionSource? PendingDownload { get; set; }
+
+    public Task<AppRelease?> FindLatestAsync(bool includePreReleases, CancellationToken ct)
+    {
+        Requests.Add(includePreReleases);
+        return Failure is { } failure ? Task.FromException<AppRelease?>(failure) : Task.FromResult(Latest);
+    }
+
+    public Task<string> ReadChecksumsAsync(AppRelease release, CancellationToken ct) =>
+        Failure is { } failure ? Task.FromException<string>(failure) : Task.FromResult(Checksums);
+
+    public async Task DownloadAsync(AppRelease release, string path, IProgress<double> progress, CancellationToken ct)
+    {
+        Downloads.Add(path);
+        foreach (double fraction in Progress)
+        {
+            progress.Report(fraction);
+        }
+
+        if (PendingDownload is { } pending)
+        {
+            await pending.Task.WaitAsync(ct);
+        }
+
+        if (DownloadFailure is { } failure)
+        {
+            throw failure;
+        }
+    }
+}
+
+internal sealed class FakeInstalledApp : IInstalledApp
+{
+    public const string DownloadPath = @"C:\Apps\WslcDesktop.exe.download";
+
+    public AppVersion? LauncherVersion { get; set; } = Version("1.1.0");
+
+    public long DownloadedSize { get; set; }
+
+    public string DownloadedSha256 { get; set; } = "";
+
+    public Exception? ReserveFailure { get; set; }
+
+    public Exception? InstallFailure { get; set; }
+
+    public List<string> Installed { get; } = [];
+
+    public List<string> Discarded { get; } = [];
+
+    public List<string[]> Restarts { get; } = [];
+
+    public AppVersion RunningVersion { get; set; } = Version("1.1.0");
+
+    public string AssetName => "WslcDesktop-win-x64.exe";
+
+    public bool HasLauncher { get; set; } = true;
+
+    public AppVersion? ReadLauncherVersion() => LauncherVersion;
+
+    public string ReserveDownloadPath() => ReserveFailure is { } failure ? throw failure : DownloadPath;
+
+    public Task<(long Size, string Sha256)> InspectAsync(string path, CancellationToken ct) => Task.FromResult((DownloadedSize, DownloadedSha256));
+
+    public void Install(string downloadedPath)
+    {
+        if (InstallFailure is { } failure)
+        {
+            throw failure;
+        }
+
+        Installed.Add(downloadedPath);
+    }
+
+    public void Discard(string path) => Discarded.Add(path);
+
+    public void Restart(string[] arguments) => Restarts.Add(arguments);
+
+    public static AppVersion Version(string text) => AppVersion.TryParse(text, out AppVersion? version) ? version : throw new FormatException(text);
+}
+

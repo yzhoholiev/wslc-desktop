@@ -16,6 +16,8 @@ public sealed class AppServices
         IWslcSettings wslcSettings,
         IShellLauncher shell,
         ISettingsStore settings,
+        IReleaseFeed releases,
+        IInstalledApp installed,
         Notifier notifier)
     {
         Reader = reader;
@@ -27,11 +29,13 @@ public sealed class AppServices
         WslcSettings = wslcSettings;
         Shell = shell;
         Settings = settings;
+        Installed = installed;
         Notifier = notifier;
         Monitor = new RuntimeMonitor(reader, session, details, hosts);
         Actions = new RuntimeActions(commands, wsl, reader, session, Monitor, notifier);
         Containers = new ContainerActions(commands);
         Cleanup = new SystemCleanup(commands, Actions);
+        Updater = new AppUpdater(releases, installed, settings, TimeProvider.System);
     }
 
     public IRuntimeReader Reader { get; }
@@ -52,6 +56,8 @@ public sealed class AppServices
 
     public ISettingsStore Settings { get; }
 
+    public IInstalledApp Installed { get; }
+
     public Notifier Notifier { get; }
 
     public RuntimeMonitor Monitor { get; }
@@ -61,4 +67,6 @@ public sealed class AppServices
     public ContainerActions Containers { get; }
 
     public SystemCleanup Cleanup { get; }
+
+    public AppUpdater Updater { get; }
 }

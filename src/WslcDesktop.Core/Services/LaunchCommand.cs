@@ -27,6 +27,11 @@ public static class LaunchCommands
     /// </summary>
     public const string TrayArgument = "--tray";
 
+    /// <summary>
+    ///     Marks the launch that follows an update, which must not start the runtime the way a launch by the user may.
+    /// </summary>
+    public const string UpdatedArgument = "--updated";
+
     private static readonly FrozenDictionary<string, LaunchCommand> ByArgument = FrozenDictionary.Create(
         StringComparer.OrdinalIgnoreCase,
         KeyValuePair.Create("--containers", LaunchCommand.ShowContainers),

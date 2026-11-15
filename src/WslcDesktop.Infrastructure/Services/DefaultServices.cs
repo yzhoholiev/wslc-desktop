@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace WslcDesktop.Services;
 
 /// <summary>
@@ -14,6 +16,9 @@ public static class DefaultServices
             new CliRuntimeReader(),
             TimeProvider.System);
 
+        var installed = new InstalledApp(Launcher.Path, InstalledApp.ReadRunningVersion(), RuntimeInformation.ProcessArchitecture);
+        var updateHandler = new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false };
+
         return new AppServices(
             reader,
             reader,
@@ -25,6 +30,8 @@ public static class DefaultServices
             new WslcSettingsFile(),
             new ShellLauncher(notifier),
             new SettingsStore(SettingsStore.DefaultFilePath),
+            new GitHubReleaseFeed(updateHandler, installed.AssetName, installed.RunningVersion),
+            installed,
             notifier);
     }
 }

@@ -54,6 +54,20 @@ public sealed class AppSettings
     ///     Whether the dashboard's attention banner lists its items.
     /// </summary>
     public bool IsAttentionOpen { get; set; }
+
+    public bool CheckForUpdates { get; set; } = true;
+
+    public DateTimeOffset? LastUpdateCheck { get; set; }
+
+    /// <summary>
+    ///     The newer version the last check found, offered again by an instance that starts before the next check.
+    /// </summary>
+    public string? AvailableUpdate { get; set; }
+
+    /// <summary>
+    ///     The version the notification area last announced, so that each one is announced once.
+    /// </summary>
+    public string? AnnouncedUpdate { get; set; }
 }
 
 public static class BackdropNames
