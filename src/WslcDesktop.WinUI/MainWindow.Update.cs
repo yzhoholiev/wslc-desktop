@@ -23,16 +23,13 @@ public sealed partial class MainWindow
     }
 
     /// <summary>
-    ///     Installs the update on offer, or restarts into an installed one, and reports a failure.
+    ///     Installs the update on offer, or restarts into an installed one.
     /// </summary>
     private async Task UpdateAppAsync()
     {
         try
         {
-            if (await Services.Updater.UpdateAsync() is { } failure)
-            {
-                Services.Notifier.Error($"Could not update {AppIdentity.DisplayName}", failure);
-            }
+            await Services.Updater.UpdateAsync();
         }
         catch (Exception ex)
         {

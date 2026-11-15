@@ -347,6 +347,13 @@ internal sealed class InMemorySettings : ISettingsStore
         set => field = StartWithWindowsFailure is { } failure ? throw failure : value;
     }
 
+    /// <summary>
+    ///     What the settings file holds, as the app's other instance left it.
+    /// </summary>
+    public AppSettings? Saved { get; set; }
+
+    public AppSettings? ReadSaved() => Saved;
+
     public void Save() => Saves++;
 }
 
@@ -420,6 +427,11 @@ internal sealed class FakeInstalledApp : IInstalledApp
 
     public Exception? InstallFailure { get; set; }
 
+    /// <summary>
+    ///     Runs while the launcher is being replaced.
+    /// </summary>
+    public Action? OnInstall { get; set; }
+
     public List<string> Installed { get; } = [];
 
     public List<string> Discarded { get; } = [];
@@ -445,6 +457,7 @@ internal sealed class FakeInstalledApp : IInstalledApp
             throw failure;
         }
 
+        OnInstall?.Invoke();
         Installed.Add(downloadedPath);
     }
 

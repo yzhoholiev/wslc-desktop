@@ -8,7 +8,7 @@ public sealed class AppUpdaterCheckTests
     private readonly FakeInstalledApp _app = new();
     private readonly FakeReleaseFeed _feed = new();
     private readonly InMemorySettings _settings = new();
-    private readonly ManualTime _time = new();
+    private readonly FixedTime _time = new();
 
     [Fact]
     public async Task State_IsUnavailable_WithoutALauncher()
@@ -220,9 +220,19 @@ public sealed class AppUpdaterCheckTests
     }
 
     [Fact]
-    public void Start_ChecksAtOnce_WhenNoCheckHasRun()
+    public void Start_ChecksOnce()
     {
-        Create().Start(new ImmediateContext());
+        Create().Start();
+
+        Assert.Single(_feed.Requests);
+    }
+
+    [Fact]
+    public void Start_Checks_EvenShortlyAfterTheLastCheck()
+    {
+        _settings.Current.LastUpdateCheck = _time.GetUtcNow() - TimeSpan.FromMinutes(5);
+
+        Create().Start();
 
         Assert.Single(_feed.Requests);
     }
@@ -232,43 +242,9 @@ public sealed class AppUpdaterCheckTests
     {
         _settings.Current.CheckForUpdates = false;
 
-        Create().Start(new ImmediateContext());
-        _time.Advance(TimeSpan.FromDays(3));
+        Create().Start();
 
         Assert.Empty(_feed.Requests);
-    }
-
-    [Fact]
-    public void Start_DoesNotCheck_WithinADayOfTheLastOne()
-    {
-        _settings.Current.LastUpdateCheck = _time.GetUtcNow() - TimeSpan.FromHours(22);
-
-        Create().Start(new ImmediateContext());
-        _time.Advance(TimeSpan.FromHours(1));
-
-        Assert.Empty(_feed.Requests);
-    }
-
-    [Fact]
-    public void Start_ChecksAgain_AfterADay()
-    {
-        Create().Start(new ImmediateContext());
-
-        _time.Advance(TimeSpan.FromHours(23));
-        Assert.Single(_feed.Requests);
-
-        _time.Advance(TimeSpan.FromHours(2));
-        Assert.Equal(2, _feed.Requests.Count);
-    }
-
-    [Fact]
-    public void Start_ChecksAgain_WhenTheLastCheckIsInTheFuture()
-    {
-        _settings.Current.LastUpdateCheck = _time.GetUtcNow() + TimeSpan.FromDays(30);
-
-        Create().Start(new ImmediateContext());
-
-        Assert.Single(_feed.Requests);
     }
 
     [Fact]
@@ -276,10 +252,24 @@ public sealed class AppUpdaterCheckTests
     {
         _app.HasLauncher = false;
 
-        Create().Start(new ImmediateContext());
-        _time.Advance(TimeSpan.FromDays(3));
+        Create().Start();
 
         Assert.Empty(_feed.Requests);
+    }
+
+    [Fact]
+    public async Task CheckAsync_KeepsTheOffer_DuringAnAutomaticCheck()
+    {
+        _feed.Latest = Release("1.2.0");
+        AppUpdater updater = Create();
+        await updater.CheckAsync(false, TestContext.Current.CancellationToken);
+        List<UpdateStatus> statuses = [];
+        updater.Changed += () => statuses.Add(updater.State.Status);
+
+        await updater.CheckAsync(false, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(UpdateStatus.Checking, statuses);
+        Assert.True(updater.CanInstall);
     }
 
     [Fact]
@@ -297,7 +287,19 @@ public sealed class AppUpdaterCheckTests
         Assert.Null(Create().TakeAnnouncement());
     }
 
-    private AppUpdater Create() => new(_feed, _app, _settings, _time);
+    [Fact]
+    public async Task TakeAnnouncement_ReturnsNull_WhenTheOtherSideAnnouncedTheVersion()
+    {
+        _feed.Latest = Release("1.2.0");
+        _settings.Saved = new AppSettings { AnnouncedUpdate = "1.2.0" };
+        AppUpdater updater = Create();
+        await updater.CheckAsync(false, TestContext.Current.CancellationToken);
+
+        Assert.Null(updater.TakeAnnouncement());
+        Assert.Equal(1, _settings.Saves);
+    }
+
+    private AppUpdater Create() => new(_feed, _app, _settings, new Notifier(), _time);
 
     private void Run(string version)
     {

@@ -110,7 +110,7 @@ Every push to `main` and every pull request builds, runs the unit tests and chec
 
 ## 🔒 Privacy
 
-WSLC Desktop collects no telemetry. The only network request it makes of its own is the update check: when it starts and once a day it asks `api.github.com` for the latest release of this repository, sending nothing but the request and its own version in the user agent (`WslcDesktop/1.2.0`). GitHub sees your IP address, as any website you open does. Turn the check off under **Settings → About**; the app then contacts GitHub only when you choose **Check now** or **Update**. A download comes from GitHub's release storage and nowhere else. Otherwise the app talks only to `wslc`, `wsl.exe` and the Docker Engine inside your wslc session; what those reach, such as a registry when you pull an image, is up to them. Links you click, such as a published port or the documentation, open in your browser.
+WSLC Desktop collects no telemetry. The only network request it makes of its own is the update check: when it starts it asks `api.github.com` for the latest release of this repository, sending nothing but the request and its own version in the user agent (`WslcDesktop/1.2.0`). GitHub sees your IP address, as any website you open does. Turn the check off under **Settings → About**; the app then contacts GitHub only when you choose **Check now** or **Update**. A download comes from GitHub's release storage and nowhere else. Otherwise the app talks only to `wslc`, `wsl.exe` and the Docker Engine inside your wslc session; what those reach, such as a registry when you pull an image, is up to them. Links you click, such as a published port or the documentation, open in your browser.
 
 ## 📄 License
 

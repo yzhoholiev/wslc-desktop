@@ -80,6 +80,8 @@ public sealed partial class MainWindow
         {
             AppIdentity.ClearRelaunchTarget(_hwnd);
             Services.Notifier.Notified -= OnNotified;
+            Services.Updater.RestartRequested -= OnRestartRequested;
+            Services.Updater.Changed -= OnUpdaterChanged;
             Services.Monitor.Updated -= OnRuntimeUpdated;
             Services.Monitor.PropertyChanged -= OnMonitorPropertyChanged;
             _launchMessages.Dispose();

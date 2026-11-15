@@ -46,7 +46,7 @@ public sealed record AttentionItem(AttentionKind Kind, string Key, string Contai
     /// <summary>
     ///     A restart loop or a download is still happening, so it stays until it ends.
     /// </summary>
-    public bool CanDismiss => Kind is not (AttentionKind.ContainerRestarting or AttentionKind.AppUpdating);
+    public bool CanDismiss => Kind is not (AttentionKind.ContainerRestarting or AttentionKind.AppUpdating or AttentionKind.AppRestart);
 
     /// <summary>
     ///     Whether the item is about the app itself rather than the runtime, and so is shown whatever the runtime's state.
@@ -113,24 +113,26 @@ public static partial class DashboardAttention
     }
 
     /// <summary>
-    ///     The item for the app's own update, or null when there is nothing to install or the user dismissed that version.
+    ///     The item for the app's own update, or null when there is nothing to install or the user dismissed that version's offer.
     /// </summary>
     public static AttentionItem? ForUpdate(UpdateState state, IReadOnlyDictionary<string, long> dismissed)
     {
-        if (state.Version is not { } version || dismissed.ContainsKey(UpdateKeyPrefix + version))
+        if (state.Version is not { } version)
         {
             return null;
         }
 
+        string key = UpdateKeyPrefix + version;
         (AttentionKind Kind, string Text)? item = state.Status switch
         {
-            UpdateStatus.Available or UpdateStatus.Failed => (AttentionKind.AppUpdate, $"WSLC Desktop {version} is available"),
-            UpdateStatus.Downloading => (AttentionKind.AppUpdating, $"Downloading WSLC Desktop {version}… {(int)Math.Round(state.Progress * 100)}%"),
+            UpdateStatus.Available or UpdateStatus.Failed when !dismissed.ContainsKey(key) =>
+                (AttentionKind.AppUpdate, $"WSLC Desktop {version} is available"),
+            UpdateStatus.Downloading => (AttentionKind.AppUpdating, $"Downloading WSLC Desktop {version}… {Labels.Percent(state.Progress)}%"),
             UpdateStatus.RestartRequired => (AttentionKind.AppRestart, $"Restart to finish updating to {version}"),
             _ => null
         };
 
-        return item is { } found ? new AttentionItem(found.Kind, UpdateKeyPrefix + version, "", "", found.Text, 1) : null;
+        return item is { } found ? new AttentionItem(found.Kind, key, "", "", found.Text, 1) : null;
     }
 
     /// <summary>

@@ -54,9 +54,20 @@ public sealed class DashboardUpdateAttentionTests
 
     [Theory]
     [InlineData(UpdateStatus.Available)]
-    [InlineData(UpdateStatus.RestartRequired)]
-    public void ForUpdate_ReturnsNull_ForADismissedVersion(UpdateStatus status) =>
+    [InlineData(UpdateStatus.Failed)]
+    public void ForUpdate_ReturnsNull_ForADismissedOffer(UpdateStatus status) =>
         Assert.Null(DashboardAttention.ForUpdate(new UpdateState(status, Next), new Dictionary<string, long> { ["update:1.2.0"] = 1 }));
+
+    [Theory]
+    [InlineData(UpdateStatus.Downloading, AttentionKind.AppUpdating)]
+    [InlineData(UpdateStatus.RestartRequired, AttentionKind.AppRestart)]
+    public void ForUpdate_ShowsAnUpdateUnderWay_AfterItsOfferWasDismissed(UpdateStatus status, AttentionKind kind)
+    {
+        AttentionItem? item = DashboardAttention.ForUpdate(new UpdateState(status, Next), new Dictionary<string, long> { ["update:1.2.0"] = 1 });
+
+        Assert.NotNull(item);
+        Assert.Equal((kind, false), (item.Kind, item.CanDismiss));
+    }
 
     [Fact]
     public void ForUpdate_ReturnsAgain_ForANewerVersion()

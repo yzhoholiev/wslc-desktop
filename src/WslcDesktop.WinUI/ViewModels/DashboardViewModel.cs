@@ -316,13 +316,12 @@ public sealed partial class DashboardViewModel : PageViewModel
     /// <summary>
     ///     Installs the app update on offer, or restarts into one that is already installed.
     /// </summary>
-    public async Task UpdateAppAsync()
-    {
-        if (await Services.Updater.UpdateAsync() is { } failure)
-        {
-            Services.Notifier.Error("Could not update WSLC Desktop", failure);
-        }
-    }
+    public Task UpdateAppAsync() => Services.Updater.UpdateAsync();
+
+    /// <summary>
+    ///     Shows where the app's own update stands, which changes between runtime snapshots.
+    /// </summary>
+    public void RefreshAttention() => ApplyAttention(Services.Monitor.Latest);
 
     public Task ShutdownWslAsync() => RunOperationAsync("Shutting down WSL", Services.Actions.ShutdownWslAsync, "WSL has been shut down.");
 

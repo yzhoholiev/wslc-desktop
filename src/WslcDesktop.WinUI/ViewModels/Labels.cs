@@ -34,7 +34,7 @@ public static class Labels
         _ => null
     };
 
-    private static int Percent(double fraction) => (int)Math.Round(Math.Clamp(fraction, 0, 1) * 100);
+    internal static int Percent(double fraction) => (int)Math.Round(Math.Clamp(fraction, 0, 1) * 100);
 
     public static string StartStopLabel(bool isRunning) => isRunning ? "Stop" : "Start";
 

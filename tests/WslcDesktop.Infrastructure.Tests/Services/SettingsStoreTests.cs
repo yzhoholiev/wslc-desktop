@@ -32,6 +32,20 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void ReadSaved_ReturnsWhatAnotherInstanceSaved()
+    {
+        var store = new SettingsStore(_file);
+        Assert.Null(store.ReadSaved());
+        _ = store.Current;
+        var other = new SettingsStore(_file);
+        other.Current.AnnouncedUpdate = "1.2.0";
+        other.Save();
+
+        Assert.Equal("1.2.0", store.ReadSaved()?.AnnouncedUpdate);
+        Assert.Null(store.Current.AnnouncedUpdate);
+    }
+
+    [Fact]
     public void Save_KeepsTheUpdateFields()
     {
         var store = new SettingsStore(_file);

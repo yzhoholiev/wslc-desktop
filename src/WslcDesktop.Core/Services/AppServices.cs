@@ -35,7 +35,7 @@ public sealed class AppServices
         Actions = new RuntimeActions(commands, wsl, reader, session, Monitor, notifier);
         Containers = new ContainerActions(commands);
         Cleanup = new SystemCleanup(commands, Actions);
-        Updater = new AppUpdater(releases, installed, settings, TimeProvider.System);
+        Updater = new AppUpdater(releases, installed, settings, notifier, TimeProvider.System);
     }
 
     public IRuntimeReader Reader { get; }

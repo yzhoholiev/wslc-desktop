@@ -50,13 +50,13 @@ public sealed class InstalledAppTests : IDisposable
     }
 
     [Fact]
-    public void ReserveDownloadPath_Throws_WhenTheFolderDoesNotExist()
+    public void ReserveDownloadPath_Throws_WhenTheLauncherIsGone()
     {
-        string missing = Path.Combine(_folder, "gone", "WslcDesktop.exe");
+        File.Delete(_launcher);
 
-        UpdateException failure = Assert.Throws<UpdateException>(() => App(missing).ReserveDownloadPath());
+        UpdateException failure = Assert.Throws<UpdateException>(App().ReserveDownloadPath);
 
-        Assert.Equal($"WSLC Desktop cannot write to {Path.Combine(_folder, "gone")}.", failure.Message);
+        Assert.Equal("WSLC Desktop was moved or deleted since it started.", failure.Message);
     }
 
     [Fact]

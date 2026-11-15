@@ -53,6 +53,11 @@ internal sealed class InstalledApp(string? launcherPath, AppVersion runningVersi
     public string ReserveDownloadPath()
     {
         string launcher = RequireLauncher();
+        if (!File.Exists(launcher))
+        {
+            throw new UpdateException("WSLC Desktop was moved or deleted since it started.");
+        }
+
         string folder = Path.GetDirectoryName(launcher)!;
         string path = $"{launcher}.{Guid.NewGuid():N}{DownloadSuffix}";
         try

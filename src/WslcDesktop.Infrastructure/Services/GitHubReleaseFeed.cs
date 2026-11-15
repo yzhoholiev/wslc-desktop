@@ -24,7 +24,11 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
     private const int BufferSize = 81920;
 
     private static readonly TimeSpan ApiTimeout = TimeSpan.FromSeconds(30);
-    private static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    ///     How long a download may go without receiving anything; a slow one that keeps arriving is left to finish.
+    /// </summary>
+    private static readonly TimeSpan DownloadStallTimeout = TimeSpan.FromMinutes(1);
 
     private readonly string _assetName;
     private readonly HttpClient _client;
@@ -39,7 +43,7 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
     }
 
     public Task<AppRelease?> FindLatestAsync(bool includePreReleases, CancellationToken ct) =>
-        RunAsync(async token =>
+        RunAsync(async (token, _) =>
         {
             if (includePreReleases)
             {
@@ -52,7 +56,7 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
         }, ApiTimeout, ct);
 
     public Task<string> ReadChecksumsAsync(AppRelease release, CancellationToken ct) =>
-        RunAsync(async token =>
+        RunAsync(async (token, _) =>
         {
             Uri url = release.Checksums ?? throw new UpdateException("The release has no checksum file.");
             using HttpResponseMessage response = await SendAsync(url, FileMediaType, token);
@@ -61,7 +65,7 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
         }, ApiTimeout, ct);
 
     public Task DownloadAsync(AppRelease release, string path, IProgress<double> progress, CancellationToken ct) =>
-        RunAsync(async token =>
+        RunAsync(async (token, restartTimeout) =>
         {
             Uri url = release.Asset ?? throw new UpdateException("The release has no download for this computer.");
             using HttpResponseMessage response = await SendAsync(url, FileMediaType, token);
@@ -74,6 +78,7 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
             int read;
             while ((read = await body.ReadAsync(buffer, token)) > 0)
             {
+                restartTimeout();
                 total += read;
                 if (total > release.AssetSize)
                 {
@@ -85,7 +90,7 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
             }
 
             return true;
-        }, DownloadTimeout, ct);
+        }, DownloadStallTimeout, ct);
 
     private AppRelease? Map(GitHubReleaseDto release)
     {
@@ -166,13 +171,16 @@ internal sealed class GitHubReleaseFeed : IReleaseFeed
             : $"GitHub answered with an error ({(int)response.StatusCode}).");
     }
 
-    private static async Task<T> RunAsync<T>(Func<CancellationToken, Task<T>> request, TimeSpan timeout, CancellationToken ct)
+    /// <summary>
+    ///     Runs a request under a time limit, which the request can start over, and reports its failures as <see cref="UpdateException" />.
+    /// </summary>
+    private static async Task<T> RunAsync<T>(Func<CancellationToken, Action, Task<T>> request, TimeSpan timeout, CancellationToken ct)
     {
         using var limited = CancellationTokenSource.CreateLinkedTokenSource(ct);
         limited.CancelAfter(timeout);
         try
         {
-            return await request(limited.Token);
+            return await request(limited.Token, () => limited.CancelAfter(timeout));
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {

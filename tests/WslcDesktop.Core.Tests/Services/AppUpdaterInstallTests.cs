@@ -16,6 +16,7 @@ public sealed class AppUpdaterInstallTests
         Checksums = $"{Hash}  WslcDesktop-win-x64.exe\n"
     };
 
+    private readonly Notifier _notifier = new();
     private readonly InMemorySettings _settings = new();
 
     [Fact]
@@ -140,14 +141,15 @@ public sealed class AppUpdaterInstallTests
     }
 
     [Fact]
-    public async Task InstallAsync_DoesNotDownload_WhenTheLauncherIsGone()
+    public async Task InstallAsync_Installs_WhenTheLauncherVersionCannotBeRead()
     {
         AppUpdater updater = await CreateWithOfferAsync();
         _app.LauncherVersion = null;
 
         await updater.InstallAsync();
 
-        AssertRefusedBeforeDownload(updater, "WSLC Desktop was moved or deleted since it started.");
+        Assert.Single(_app.Installed);
+        Assert.Equal(UpdateStatus.RestartRequired, updater.State.Status);
     }
 
     [Fact]
@@ -248,6 +250,40 @@ public sealed class AppUpdaterInstallTests
     }
 
     [Fact]
+    public async Task CancelInstall_AfterTheDownload_DoesNotInstall()
+    {
+        _feed.Progress = [1];
+        AppUpdater updater = await CreateWithOfferAsync();
+        updater.Changed += () =>
+        {
+            if (updater.State is { Status: UpdateStatus.Downloading, Progress: 1 })
+            {
+                updater.CancelInstall();
+            }
+        };
+
+        await updater.InstallAsync();
+
+        Assert.Equal(UpdateStatus.Available, updater.State.Status);
+        Assert.Empty(_app.Installed);
+        Assert.Equal([FakeInstalledApp.DownloadPath], _app.Discarded);
+    }
+
+    [Fact]
+    public async Task CancelInstall_DuringTheSwap_InstallsWithoutRestarting()
+    {
+        AppUpdater updater = await CreateWithOfferAsync();
+        _app.OnInstall = updater.CancelInstall;
+        int restarts = 0;
+        updater.RestartRequested += () => restarts++;
+
+        await updater.InstallAsync();
+
+        Assert.Equal(UpdateStatus.RestartRequired, updater.State.Status);
+        Assert.Equal(0, restarts);
+    }
+
+    [Fact]
     public async Task RequestRestart_RaisesTheEvent_OnlyWhenARestartIsPending()
     {
         AppUpdater updater = await CreateWithOfferAsync();
@@ -263,22 +299,31 @@ public sealed class AppUpdaterInstallTests
     }
 
     [Fact]
-    public async Task UpdateAsync_InstallsAndReturnsNoFailure()
+    public async Task UpdateAsync_InstallsWithoutANotification()
     {
         AppUpdater updater = await CreateWithOfferAsync();
+        List<Notification> notifications = [];
+        _notifier.Notified += notifications.Add;
 
-        Assert.Null(await updater.UpdateAsync());
+        await updater.UpdateAsync();
 
         Assert.Single(_app.Installed);
+        Assert.Empty(notifications);
     }
 
     [Fact]
-    public async Task UpdateAsync_ReturnsTheReason_WhenTheInstallationFails()
+    public async Task UpdateAsync_NotifiesOfTheReason_WhenTheInstallationFails()
     {
         _app.InstallFailure = new UpdateException("WSLC Desktop could not be replaced.");
         AppUpdater updater = await CreateWithOfferAsync();
+        List<Notification> notifications = [];
+        _notifier.Notified += notifications.Add;
 
-        Assert.Equal("WSLC Desktop could not be replaced.", await updater.UpdateAsync());
+        await updater.UpdateAsync();
+
+        Notification notification = Assert.Single(notifications);
+        Assert.Equal(("Could not update WSLC Desktop", "WSLC Desktop could not be replaced.", NotificationSeverity.Error),
+            (notification.Title, notification.Message, notification.Severity));
     }
 
     [Fact]
@@ -289,20 +334,22 @@ public sealed class AppUpdaterInstallTests
         int restarts = 0;
         updater.RestartRequested += () => restarts++;
 
-        Assert.Null(await updater.UpdateAsync());
+        await updater.UpdateAsync();
 
         Assert.Equal(1, restarts);
         Assert.Single(_app.Installed);
     }
 
     [Fact]
-    public async Task UpdateAsync_ReturnsNoFailure_WhenAnotherUpdateIsRunning()
+    public async Task UpdateAsync_DoesNothing_WhenAnotherUpdateIsRunning()
     {
         _feed.PendingDownload = new TaskCompletionSource();
         AppUpdater updater = await CreateWithOfferAsync();
         Task first = updater.InstallAsync();
 
-        Assert.Null(await updater.UpdateAsync());
+        await updater.UpdateAsync();
+
+        Assert.Single(_feed.Downloads);
 
         _feed.PendingDownload.SetResult();
         await first;
@@ -398,7 +445,7 @@ public sealed class AppUpdaterInstallTests
         Assert.Empty(_app.Installed);
     }
 
-    private AppUpdater Create() => new(_feed, _app, _settings, new ManualTime());
+    private AppUpdater Create() => new(_feed, _app, _settings, _notifier, new FixedTime());
 
     private async Task<AppUpdater> CreateWithOfferAsync()
     {

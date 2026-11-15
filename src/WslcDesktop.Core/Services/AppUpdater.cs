@@ -12,27 +12,21 @@ public sealed class AppUpdater
     /// </summary>
     private const long MaxDownloadBytes = 200L * 1024 * 1024;
 
-    private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(24);
-
-    /// <summary>
-    ///     How often a running app looks whether a check is due, which also covers a machine that slept through the interval.
-    /// </summary>
-    private static readonly TimeSpan DuePollInterval = TimeSpan.FromHours(1);
-
     private readonly IInstalledApp _app;
     private readonly IReleaseFeed _feed;
+    private readonly Notifier _notifier;
     private readonly ISettingsStore _settings;
     private readonly TimeProvider _time;
     private CancellationTokenSource? _installCancellation;
     private int _isBusy;
     private AppRelease? _release;
-    private ITimer? _timer;
 
-    public AppUpdater(IReleaseFeed feed, IInstalledApp app, ISettingsStore settings, TimeProvider time)
+    public AppUpdater(IReleaseFeed feed, IInstalledApp app, ISettingsStore settings, Notifier notifier, TimeProvider time)
     {
         _feed = feed;
         _app = app;
         _settings = settings;
+        _notifier = notifier;
         _time = time;
         State = InitialState();
     }
@@ -46,16 +40,6 @@ public sealed class AppUpdater
     /// </summary>
     public bool CanInstall => State is { Status: UpdateStatus.Available or UpdateStatus.Failed, Version: not null };
 
-    private bool IsCheckDue
-    {
-        get
-        {
-            DateTimeOffset now = _time.GetUtcNow();
-            return _settings.Current.CheckForUpdates
-                && (_settings.Current.LastUpdateCheck is not { } last || last > now || now - last >= CheckInterval);
-        }
-    }
-
     public event Action? Changed;
 
     /// <summary>
@@ -64,17 +48,14 @@ public sealed class AppUpdater
     public event Action? RestartRequested;
 
     /// <summary>
-    ///     Begins the automatic checks, which run on the given context, as do the events they raise.
+    ///     Runs the automatic check, which an app does once, as it starts.
     /// </summary>
-    public void Start(SynchronizationContext context)
+    public void Start()
     {
-        if (!_app.HasLauncher || _timer is not null)
+        if (_settings.Current.CheckForUpdates)
         {
-            return;
+            _ = CheckAsync(false);
         }
-
-        CheckWhenDue();
-        _timer = _time.CreateTimer(_ => context.Post(_ => CheckWhenDue(), null), null, DuePollInterval, DuePollInterval);
     }
 
     /// <summary>
@@ -96,7 +77,12 @@ public sealed class AppUpdater
                 return;
             }
 
-            Set(new UpdateState(UpdateStatus.Checking));
+            // An automatic check leaves a version on offer in place, so its Update buttons stay usable meanwhile.
+            if (isManual || !CanInstall)
+            {
+                Set(new UpdateState(UpdateStatus.Checking));
+            }
+
             AppRelease? release = await FindNewerAsync(ct);
             _release = release is not null && IsInstallable(release) ? release : null;
 
@@ -163,10 +149,8 @@ public sealed class AppUpdater
             version = release.Version;
             page = release.Page;
 
-            AppVersion installed = _app.ReadLauncherVersion() ?? throw new UpdateException("WSLC Desktop was moved or deleted since it started.");
-
             // The other side may have updated the launcher since this version was offered; replacing it again could even downgrade it.
-            if (installed > _app.RunningVersion && installed >= version)
+            if (_app.ReadLauncherVersion() is { } installed && installed > _app.RunningVersion && installed >= version)
             {
                 Forget();
                 Set(new UpdateState(UpdateStatus.RestartRequired, installed));
@@ -187,13 +171,17 @@ public sealed class AppUpdater
                 throw new UpdateException("The download did not match its checksum.");
             }
 
+            cancellation.Token.ThrowIfCancellationRequested();
+
             // The swap waits for a starting launcher and retries while a scanner holds the file, which would freeze the caller's thread.
             string verified = download;
             await Task.Run(() => _app.Install(verified));
             download = null;
             Forget();
             Set(new UpdateState(UpdateStatus.RestartRequired, version));
-            isRestartPending = true;
+
+            // A swap cannot be undone, so a cancel that arrives during it only holds back the restart.
+            isRestartPending = !cancellation.IsCancellationRequested;
         }
         catch (OperationCanceledException)
         {
@@ -218,24 +206,27 @@ public sealed class AppUpdater
     }
 
     /// <summary>
-    ///     Does what an Update button means: installs the version on offer, or asks for the restart an installed one waits for.
+    ///     Does what an Update button means: installs the version on offer, or asks for the restart an installed one waits for,
+    ///     and notifies of a failure.
     /// </summary>
-    /// <returns>Why the installation failed, or null when it did not.</returns>
-    public async Task<string?> UpdateAsync()
+    public async Task UpdateAsync()
     {
         if (State.Status == UpdateStatus.RestartRequired)
         {
             RequestRestart();
-            return null;
+            return;
         }
 
         if (!CanInstall || Volatile.Read(ref _isBusy) != 0)
         {
-            return null;
+            return;
         }
 
         await InstallAsync();
-        return State.Status == UpdateStatus.Failed ? State.Message : null;
+        if (State is { Status: UpdateStatus.Failed, Message: { } reason })
+        {
+            _notifier.Error("Could not update WSLC Desktop", reason);
+        }
     }
 
     public void CancelInstall() => _installCancellation?.Cancel();
@@ -261,7 +252,14 @@ public sealed class AppUpdater
             return null;
         }
 
+        // The other side keeps its own copy of the settings, so what it announced is only in the file.
+        bool isAnnouncedByOtherSide = _settings.ReadSaved()?.AnnouncedUpdate == version.ToString();
         _settings.Current.AnnouncedUpdate = version.ToString();
+        if (isAnnouncedByOtherSide)
+        {
+            return null;
+        }
+
         _settings.Save();
         return version;
     }
@@ -342,14 +340,6 @@ public sealed class AppUpdater
         if (download is not null)
         {
             _app.Discard(download);
-        }
-    }
-
-    private void CheckWhenDue()
-    {
-        if (IsCheckDue)
-        {
-            _ = CheckAsync(false);
         }
     }
 

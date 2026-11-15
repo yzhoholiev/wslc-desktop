@@ -11,5 +11,10 @@ public interface ISettingsStore
 
     bool IsStartWithWindowsEnabled { get; set; }
 
+    /// <summary>
+    ///     The settings as the file holds them now, which the app's other instance may have changed, or null when it cannot be read.
+    /// </summary>
+    AppSettings? ReadSaved();
+
     void Save();
 }

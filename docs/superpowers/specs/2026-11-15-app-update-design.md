@@ -56,7 +56,7 @@ Today a user updates WSLC Desktop by hand: exit from the tray, download the new 
 
 ### Behaviour
 
-1. **Check.** On start and every 24 hours while running, unless the switch is off. Check now always works. The app asks GitHub for the latest release of `yzhoholiev/wslc-desktop`. Someone running a pre-release build is also offered newer pre-releases; someone on a release only gets releases.
+1. **Check.** Once on start, unless the switch is off. Check now always works. The app asks GitHub for the latest release of `yzhoholiev/wslc-desktop`. Someone running a pre-release build is also offered newer pre-releases; someone on a release only gets releases.
 2. **Compare.** Versions compare as SemVer, pre-release part included. Only a strictly newer version is offered.
 3. **Download.** The asset for this process architecture, saved beside the launcher under a temporary name, with progress and cancel. Only `https` URLs on GitHub's hosts are followed, and a size limit applies.
 4. **Verify.** The file's SHA-256 must match its line in the release's `SHA256SUMS.txt`. A release without that file, or without a line for the asset, is not installable.
@@ -88,7 +88,7 @@ Today a user updates WSLC Desktop by hand: exit from the tray, download the new 
 ## Calls made here, not by the maintainer
 
 - The automatic check is **on by default**. It sends GitHub the request and a generic `WslcDesktop/<version>` user agent, nothing else.
-- Check interval of 24 hours, and no check when the last one was less than that ago.
+- One automatic check per start; a running app does not check again on its own.
 - Release notes are a link to the release page, not rendered in the app.
 - Pre-releases are offered only to pre-release builds; there is no switch for it.
 - The other-side and manual-replacement case is detected from the launcher file's version.

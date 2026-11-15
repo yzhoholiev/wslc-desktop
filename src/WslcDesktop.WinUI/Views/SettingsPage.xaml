@@ -104,7 +104,7 @@
 
             <controls:SettingRow
                 Title="Check for updates automatically"
-                Description="Asks GitHub for the latest release when the app starts and once a day. Nothing is downloaded until you choose Update."
+                Description="Asks GitHub for the latest release when the app starts. Nothing is downloaded until you choose Update."
                 IsEnabled="{x:Bind ViewModel.IsUpdateSectionEnabled}">
                 <ToggleSwitch x:Name="CheckForUpdatesSwitch" AutomationProperties.Name="Check for updates automatically"
                               IsOn="{x:Bind ViewModel.CheckForUpdates, Mode=TwoWay}" />

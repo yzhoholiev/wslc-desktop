@@ -51,7 +51,7 @@ public partial class App
                 ?? throw new InvalidOperationException("The UI thread has no synchronization context.");
 
             Services.Monitor.Start(context);
-            Services.Updater.Start(context);
+            Services.Updater.Start();
 
             if (StartInTray)
             {

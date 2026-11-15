@@ -9,7 +9,7 @@ namespace WslcDesktop.ViewModels;
 /// <summary>
 ///     The settings page: the stored preferences, the start-with-Windows entry, the app's updates and the version shown in About.
 /// </summary>
-public sealed class SettingsViewModel(AppServices services) : ObservableObject
+public sealed partial class SettingsViewModel(AppServices services) : ObservableObject
 {
     private static readonly string[] UpdateProperties =
     [

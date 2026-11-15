@@ -23,10 +23,10 @@ public sealed partial class DashboardPage
         this.FollowMonitor(services.Monitor, OnRuntimeUpdated);
         Loaded += (_, _) =>
         {
-            services.Updater.Changed += OnRuntimeUpdated;
+            services.Updater.Changed += OnUpdaterChanged;
             OnRuntimeUpdated();
         };
-        Unloaded += (_, _) => services.Updater.Changed -= OnRuntimeUpdated;
+        Unloaded += (_, _) => services.Updater.Changed -= OnUpdaterChanged;
 
         // A ScrollViewer gives its content unbounded height; this lets the last row fill the window and still scroll when it is short.
         Scroller.SizeChanged += (_, e) => PageContent.MinHeight = e.NewSize.Height;
@@ -35,6 +35,8 @@ public sealed partial class DashboardPage
     public DashboardViewModel ViewModel { get; }
 
     private void OnRuntimeUpdated() => ViewModel.Apply(_services.Monitor.Latest);
+
+    private void OnUpdaterChanged() => ViewModel.RefreshAttention();
 
     public async Task ShutdownWslAsync()
     {

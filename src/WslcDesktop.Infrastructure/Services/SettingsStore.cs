@@ -58,6 +58,20 @@ internal sealed class SettingsStore(string filePath) : ISettingsStore
         }
     }
 
+    public AppSettings? ReadSaved()
+    {
+        try
+        {
+            return File.Exists(filePath)
+                ? JsonSerializer.Deserialize(File.ReadAllText(filePath), AppSettingsJsonContext.Default.AppSettings)
+                : null;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     public void Save()
     {
         if (_isUnreadable)
