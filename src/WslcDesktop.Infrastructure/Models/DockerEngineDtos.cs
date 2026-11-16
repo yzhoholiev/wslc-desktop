@@ -88,6 +88,25 @@ internal sealed class EngineVolume
     public Dictionary<string, string>? Labels { get; set; }
 }
 
+internal sealed class EngineDiskUsage
+{
+    public List<EngineVolumeUsage>? Volumes { get; set; }
+}
+
+internal sealed class EngineVolumeUsage
+{
+    public string Name { get; set; } = "";
+    public EngineUsageData? UsageData { get; set; }
+}
+
+internal sealed class EngineUsageData
+{
+    /// <summary>
+    ///     -1 when the volume's driver cannot be measured.
+    /// </summary>
+    public long Size { get; set; } = -1;
+}
+
 internal sealed class EngineNetwork
 {
     public string Id { get; set; } = "";
@@ -183,6 +202,7 @@ internal sealed class EnginePidsStats
 [JsonSerializable(typeof(List<EngineContainer>))]
 [JsonSerializable(typeof(List<EngineImage>))]
 [JsonSerializable(typeof(EngineVolumeList))]
+[JsonSerializable(typeof(EngineDiskUsage))]
 [JsonSerializable(typeof(List<EngineNetwork>))]
 [JsonSerializable(typeof(EngineStats))]
 [JsonSerializable(typeof(ImageInspectDto))]

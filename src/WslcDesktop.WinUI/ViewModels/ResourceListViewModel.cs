@@ -16,7 +16,7 @@ public abstract partial class ResourceListViewModel<TItem> : ListViewModel<TItem
     private bool _hasLoaded;
     private CancellationTokenSource? _inspectLoad;
     private bool _isRuntimeStopped;
-    private int _loadGeneration;
+    private CancellationTokenSource? _load;
     private Func<TItem, bool>? _pendingSelection;
     private string? _unavailableError;
 
@@ -172,7 +172,9 @@ public abstract partial class ResourceListViewModel<TItem> : ListViewModel<TItem
     private async Task LoadItemsAsync()
     {
         // Loads overlap (page load, refresh, a runtime change); only the newest may write the list.
-        int generation = ++_loadGeneration;
+        _load?.Cancel();
+        _load = new CancellationTokenSource();
+        CancellationToken superseded = _load.Token;
         RuntimeSnapshot latest = Services.Monitor.Latest;
 
         _reload.Remember(latest);
@@ -197,7 +199,7 @@ public abstract partial class ResourceListViewModel<TItem> : ListViewModel<TItem
         try
         {
             List<TItem> items = await FetchAsync();
-            if (generation != _loadGeneration)
+            if (superseded.IsCancellationRequested)
             {
                 return;
             }
@@ -208,20 +210,53 @@ public abstract partial class ResourceListViewModel<TItem> : ListViewModel<TItem
         }
         catch (CliException ex)
         {
-            if (generation != _loadGeneration)
+            if (superseded.IsCancellationRequested)
             {
                 return;
             }
 
             SetLoadError(ex.Message);
+            ShowLoaded();
+            return;
         }
 
+        ShowLoaded();
+        OnItemsLoaded(superseded);
+    }
+
+    private void ShowLoaded()
+    {
         _hasLoaded = true;
         ApplyFilter();
         TrySelectPending();
 
         // A request for an item that no longer exists must not fire on some later reload.
         _pendingSelection = null;
+    }
+
+    /// <summary>
+    ///     Called once a fetch has been applied to the list, for data that is slower to read than the list itself.
+    /// </summary>
+    /// <param name="superseded">Cancelled when a newer load starts, which includes the one that finds the runtime stopped.</param>
+    protected virtual void OnItemsLoaded(CancellationToken superseded)
+    {
+    }
+
+    /// <summary>
+    ///     Replaces each loaded item with a newer record of it, unless the load they came from has been superseded.
+    /// </summary>
+    /// <param name="update">Returns the newer record of an item.</param>
+    /// <param name="superseded">The token <see cref="OnItemsLoaded" /> received.</param>
+    protected void UpdateItems(Func<TItem, TItem> update, CancellationToken superseded)
+    {
+        if (superseded.IsCancellationRequested)
+        {
+            return;
+        }
+
+        _all = [.. _all.Select(update)];
+        Summary = Summarize(_all);
+        ApplyFilter();
     }
 
     private void TrySelectPending()

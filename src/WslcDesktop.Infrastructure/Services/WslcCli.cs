@@ -4,7 +4,7 @@ using WslcDesktop.Models;
 namespace WslcDesktop.Services;
 
 /// <summary>
-///     Typed access to the wslc container CLI: every runtime change and the CLI-only reads.
+///     Typed access to the wslc container CLI: every runtime change and the reads that run as a wslc process of their own.
 /// </summary>
 public sealed class WslcCli : IRuntimeCommands, IRuntimeDetails
 {
@@ -35,9 +35,19 @@ public sealed class WslcCli : IRuntimeCommands, IRuntimeDetails
     /// </summary>
     private static readonly TimeSpan PullTimeout = TimeSpan.FromMinutes(30);
 
+    /// <summary>
+    ///     Time limit for measuring volumes, just past the request's own so a slow engine fails with curl's reason.
+    /// </summary>
+    private static readonly TimeSpan VolumeSizesTimeout = TimeSpan.FromSeconds(DockerEngine.VolumeSizesSeconds + 5);
+
     internal WslcCli()
     {
     }
+
+    /// <summary>
+    ///     The wslc arguments that ask the default session's Docker Engine for volume sizes, named so that wslc cannot create the session.
+    /// </summary>
+    internal static string[] VolumeSizesArguments => SessionRunArguments(Wslc.DefaultSessionName, DockerEngine.VolumeSizesRequest);
 
     /// <summary>
     ///     The installed wslc, or the bare name when it is missing, looked up on each use so that installing WSL takes effect without a restart.
@@ -114,6 +124,9 @@ public sealed class WslcCli : IRuntimeCommands, IRuntimeDetails
 
     public Task<string> InspectNetworkAsync(string name, CancellationToken ct = default) =>
         RunAsync(QueryTimeout, ["network", "inspect", name], ct);
+
+    public async Task<IReadOnlyDictionary<string, long>> ReadVolumeSizesAsync(CancellationToken ct = default) =>
+        DockerEngine.ParseVolumeSizes(await RunAsync(VolumeSizesTimeout, VolumeSizesArguments, ct));
 
     /// <summary>
     ///     The wslc run or create arguments for the options.

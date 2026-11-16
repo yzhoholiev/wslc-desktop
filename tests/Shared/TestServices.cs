@@ -225,6 +225,11 @@ internal sealed class FakeRuntimeDetails : IRuntimeDetails
     public Task<string> InspectVolumeAsync(string name, CancellationToken ct = default) => Task.FromResult($"inspect volume {name}");
 
     public Task<string> InspectNetworkAsync(string name, CancellationToken ct = default) => Task.FromResult($"inspect network {name}");
+
+    public Func<CancellationToken, Task<IReadOnlyDictionary<string, long>>> ReadVolumeSizes { get; set; } =
+        _ => Task.FromResult<IReadOnlyDictionary<string, long>>(new Dictionary<string, long>());
+
+    public Task<IReadOnlyDictionary<string, long>> ReadVolumeSizesAsync(CancellationToken ct = default) => ReadVolumeSizes(ct);
 }
 
 internal sealed class FakeSessionHosts : ISessionHosts

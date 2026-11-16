@@ -4,6 +4,10 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+### Added
+
+- The Volumes page shows each volume's size and their total, and sorts by size. Pointing at a size shows it in bytes.
+
 ## [1.2.0] - 2026-11-15
 
 ### Added

@@ -17,7 +17,17 @@ internal sealed class DockerEngine(ISessionShell shell) : IRuntimeConnection
     /// <summary>
     ///     v1.41 is the oldest API with one-shot stats; pinning it keeps response shapes stable across engine upgrades.
     /// </summary>
-    private const string Curl = "curl -sS --fail --max-time 10 --unix-socket /var/run/docker.sock http://localhost/v1.41";
+    private static readonly string Curl = string.Join(' ', SessionCommands.EngineRequest(10, "http://localhost/v1.41"));
+
+    /// <summary>
+    ///     Time limit of <see cref="VolumeSizesRequest" />, far above the other requests' because the engine walks every file in every volume.
+    /// </summary>
+    internal const int VolumeSizesSeconds = 60;
+
+    /// <summary>
+    ///     The request for the size of every volume; API 1.42 is the oldest that measures volumes alone.
+    /// </summary>
+    internal static string[] VolumeSizesRequest => SessionCommands.EngineRequest(VolumeSizesSeconds, "http://localhost/v1.42/system/df?type=volume");
 
     private const string StatsIdPrefix = "@id ";
 
@@ -115,6 +125,9 @@ internal sealed class DockerEngine(ISessionShell shell) : IRuntimeConnection
 
         return Deserialize(json, Json.ImageInspectDto).Config;
     }
+
+    internal static Dictionary<string, long> ParseVolumeSizes(string json) =>
+        DockerEngineMapper.ToVolumeSizes(Deserialize(json, Json.EngineDiskUsage));
 
     public Task<string> ReadVmStatusAsync(CancellationToken ct) => RunInSessionAsync(SessionCommands.VmStatus, ct);
 

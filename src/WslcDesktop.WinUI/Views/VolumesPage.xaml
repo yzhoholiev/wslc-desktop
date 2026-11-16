@@ -11,7 +11,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="RowTemplate" x:DataType="vm:VolumeItem">
-            <controls:ClickableRow Height="48" ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 40">
+            <controls:ClickableRow Height="48" ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 90, 1.2*, 40">
                 <controls:ClickableRow.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Copy name" Tag="{x:Bind Name}" Click="OnCopyClick">
@@ -39,8 +39,9 @@
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <TextBlock Grid.Column="2" Text="{x:Bind Mountpoint}" VerticalAlignment="Center" controls:Overflow.Shortens="True"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="12" />
-                <controls:UsageChip Grid.Column="3" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
-                <StackPanel x:Name="RowActions" Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Grid.Column="3" Text="{x:Bind Size}" VerticalAlignment="Center" controls:Overflow.FullText="{x:Bind SizeInBytes}" />
+                <controls:UsageChip Grid.Column="4" ContainerCount="{x:Bind ContainerCount}" Tag="{x:Bind}" Click="OnUsageClick" />
+                <StackPanel x:Name="RowActions" Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="RowMenu" Style="{StaticResource RowActionButtonStyle}" ToolTipService.ToolTip="More actions"
                             AutomationProperties.Name="More actions">
                         <FontIcon Glyph="&#xE712;" FontSize="14" />
@@ -76,11 +77,12 @@
             </StackPanel>
         </views:ResourceListView.Toolbar>
         <views:ResourceListView.ColumnHeaders>
-            <Grid ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 1.2*, 40">
+            <Grid ColumnSpacing="12" ColumnDefinitions="1.6*, 80, 2.4*, 90, 1.2*, 40">
                 <controls:SortHeader Text="NAME" Key="name" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="1" Text="DRIVER" Key="driver" Sort="{x:Bind ViewModel.Sort}" />
                 <controls:SortHeader Grid.Column="2" Text="MOUNTPOINT" Key="mountpoint" Sort="{x:Bind ViewModel.Sort}" />
-                <controls:SortHeader Grid.Column="3" Text="USAGE" Key="usage" Sort="{x:Bind ViewModel.Sort}" />
+                <controls:SortHeader Grid.Column="3" Text="SIZE" Key="size" Sort="{x:Bind ViewModel.Sort}" />
+                <controls:SortHeader Grid.Column="4" Text="USAGE" Key="usage" Sort="{x:Bind ViewModel.Sort}" />
             </Grid>
         </views:ResourceListView.ColumnHeaders>
     </views:ResourceListView>

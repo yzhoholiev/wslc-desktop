@@ -3,7 +3,7 @@ using WslcDesktop.Models;
 namespace WslcDesktop.Services;
 
 /// <summary>
-///     The reads that only wslc answers: runtime info, container logs, and inspect output shown as text.
+///     The reads that run as a wslc process of their own: runtime info, container logs, inspect output shown as text, and volume sizes.
 /// </summary>
 public interface IRuntimeDetails
 {
@@ -23,4 +23,9 @@ public interface IRuntimeDetails
     Task<string> InspectVolumeAsync(string name, CancellationToken ct = default);
 
     Task<string> InspectNetworkAsync(string name, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Size in bytes of each volume the engine can measure, by volume name.
+    /// </summary>
+    Task<IReadOnlyDictionary<string, long>> ReadVolumeSizesAsync(CancellationToken ct = default);
 }

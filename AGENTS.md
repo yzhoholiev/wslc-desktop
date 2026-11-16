@@ -70,6 +70,8 @@ When you add a read:
 
 Existing CLI-only reads (`wslc info`, `inspect` text in the details panels, container logs) are deliberate; do not copy that pattern for new list or detail data.
 
+Volume sizes are the one engine read outside `AppServices.Reader`: `IRuntimeDetails.ReadVolumeSizesAsync` asks the engine's `/v1.42/system/df?type=volume` with `curl` in a `wslc` process of its own. Measuring walks every file in every volume, and the `SessionShell` runs one command at a time with a 30 s limit, so over the shell it would hold up every other read. Take that route only for a read that can run that long.
+
 ### Writes: always `wslc`
 
 Every change to the runtime (run, create, start, stop, remove, pull, prune, session terminate) goes through `IRuntimeCommands`, implemented by `WslcCli`, never through Engine `POST`/`DELETE`. `wslc` does work the raw API does not: it turns Windows paths like `D:\data` into bind mounts, publishes ports on Windows `localhost`, and owns the session lifecycle.

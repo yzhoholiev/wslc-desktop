@@ -57,6 +57,20 @@ internal static class DockerEngineMapper
         Labels = string.Join(",", (volume.Labels ?? []).Select(label => $"{label.Key}={label.Value}"))
     };
 
+    public static Dictionary<string, long> ToVolumeSizes(EngineDiskUsage usage)
+    {
+        var sizes = new Dictionary<string, long>();
+        foreach (EngineVolumeUsage volume in usage.Volumes ?? [])
+        {
+            if (volume is { Name.Length: > 0, UsageData.Size: >= 0 and var size })
+            {
+                sizes[volume.Name] = size;
+            }
+        }
+
+        return sizes;
+    }
+
     public static NetworkDto ToNetworkDto(EngineNetwork network) => new()
     {
         Id = network.Id,
