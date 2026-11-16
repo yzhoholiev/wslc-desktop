@@ -9,6 +9,11 @@ public interface IShellLauncher
 
     void OpenDistroShell(string distro);
 
+    /// <summary>
+    ///     Opens a terminal that installs the distribution and runs its first-time setup.
+    /// </summary>
+    void InstallDistro(string distro);
+
     void OpenSessionShell(string session);
 
     void OpenWslConfig();

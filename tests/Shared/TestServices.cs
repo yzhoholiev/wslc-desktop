@@ -286,6 +286,15 @@ internal sealed class FakeWslPlatform : IWslPlatform
 
     public Task SetDefaultAsync(string distro) => Record($"set-default {distro}");
 
+    public List<AvailableDistro> Available { get; set; } = [];
+
+    public Exception? UnregisterFailure { get; set; }
+
+    public Task UnregisterAsync(string distro) =>
+        UnregisterFailure is { } failure ? Task.FromException(failure) : Record($"unregister {distro}");
+
+    public Task<List<AvailableDistro>> ListAvailableDistrosAsync(CancellationToken ct = default) => Task.FromResult(Available);
+
     public async Task<string> UpdateAsync(bool preRelease)
     {
         await Record(preRelease ? "update --pre-release" : "update");
@@ -321,6 +330,8 @@ internal sealed class FakeShellLauncher : IShellLauncher
     public void OpenContainerShell(string containerId) => Opened.Add($"container-shell {containerId}");
 
     public void OpenDistroShell(string distro) => Opened.Add($"distro-shell {distro}");
+
+    public void InstallDistro(string distro) => Opened.Add($"install-distro {distro}");
 
     public void OpenSessionShell(string session) => Opened.Add($"session-shell {session}");
 

@@ -8,6 +8,21 @@ public sealed class InputValidationTests
     public void SessionRunArguments_NameTheSessionSoWslcCannotCreateIt() =>
         Assert.Equal(["--session", "s", "system", "session", "run", "df", "-B1"], WslcCli.SessionRunArguments("s", "df", "-B1"));
 
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("Ubuntu;calc")]
+    [InlineData("Ubuntu 24.04")]
+    public void InstallDistro_RefusesANameWslWouldNotReadAsADistribution(string distro)
+    {
+        var notifier = new Notifier();
+        List<Notification> notifications = [];
+        notifier.Notified += notifications.Add;
+
+        new ShellLauncher(notifier).InstallDistro(distro);
+
+        Assert.Equal($"Could not install {distro}", Assert.Single(notifications).Title);
+    }
+
     [Fact]
     public void Launcher_AcceptsAFullPathToAnExistingFile()
     {

@@ -40,4 +40,21 @@ public sealed partial class WslPage
             await ViewModel.TerminateAsync(distro);
         }
     }
+
+    private async void OnRemoveDistroClick(object sender, RoutedEventArgs e)
+    {
+        WslDistro distro = sender.TagOf<WslDistro>();
+        if (await Dialogs.ConfirmRemoveDistroAsync(XamlRoot, distro.Name))
+        {
+            await ViewModel.RemoveAsync(distro);
+        }
+    }
+
+    private async void OnAddDistroClick(object sender, RoutedEventArgs e)
+    {
+        if (await AddDistroDialog.ChooseAsync(XamlRoot, ViewModel.ListAvailableAsync) is { } distro)
+        {
+            ViewModel.Install(distro);
+        }
+    }
 }

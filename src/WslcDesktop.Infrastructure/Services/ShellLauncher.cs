@@ -13,6 +13,18 @@ internal sealed class ShellLauncher(Notifier notifier) : IShellLauncher
 
     public void OpenDistroShell(string distro) => OpenTerminal(WslCli.ExecutablePath, "--distribution", distro, "--cd", "~");
 
+    public void InstallDistro(string distro)
+    {
+        if (DistroName.IsValid(distro))
+        {
+            OpenTerminal(WslCli.ExecutablePath, "--install", distro);
+        }
+        else
+        {
+            notifier.Error($"Could not install {distro}", "WSL distribution names use only letters, digits, '.', '_' and '-'.");
+        }
+    }
+
     public void OpenSessionShell(string session) => OpenTerminal(WslcCli.ExecutablePath, "--session", session, "system", "session", "shell");
 
     public void OpenWslConfig() => Start("notepad.exe", [WslConfigFile.FilePath]);

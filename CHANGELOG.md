@@ -4,6 +4,10 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+### Added
+
+- **Add and remove WSL distributions** on the WSL page. Add lists the distributions WSL offers and installs the chosen one in a terminal; Remove deletes a distribution and its files after confirming.
+
 ## [1.3.1] - 2026-11-16
 
 ### Fixed

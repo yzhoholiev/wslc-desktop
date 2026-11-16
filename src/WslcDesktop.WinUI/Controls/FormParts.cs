@@ -50,18 +50,20 @@ internal static class FormParts
         section.Children.Add(Label(new TextBlock { Text = title, Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"] }, help));
         if (hint is not null)
         {
-            section.Children.Add(new TextBlock
-            {
-                Text = hint,
-                TextWrapping = TextWrapping.Wrap,
-                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
-            });
+            section.Children.Add(Hint(hint));
         }
 
         section.Children.Add(body);
         return section;
     }
+
+    public static TextBlock Hint(string text) => new()
+    {
+        Text = text,
+        TextWrapping = TextWrapping.Wrap,
+        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+        Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+    };
 
     public static Grid Pair(FrameworkElement first, FrameworkElement second)
     {

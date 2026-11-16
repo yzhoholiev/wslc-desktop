@@ -20,6 +20,11 @@ internal sealed class WslCli : IWslPlatform
     /// </summary>
     private static readonly TimeSpan UpdateTimeout = TimeSpan.FromMinutes(30);
 
+    /// <summary>
+    ///     The list of distributions to install is downloaded.
+    /// </summary>
+    private static readonly TimeSpan OnlineListTimeout = TimeSpan.FromMinutes(1);
+
     public static string ExecutablePath { get; } = Path.Combine(Environment.SystemDirectory, "wsl.exe");
 
     public static string SettingsAppPath { get; } = Path.Combine(
@@ -45,12 +50,20 @@ internal sealed class WslCli : IWslPlatform
 
     public Task SetDefaultAsync(string distro) => RunAsync(QueryTimeout, "--set-default", distro);
 
+    public Task UnregisterAsync(string distro) => RunAsync(OperationTimeout, "--unregister", distro);
+
+    public async Task<List<AvailableDistro>> ListAvailableDistrosAsync(CancellationToken ct = default)
+    {
+        string output = await Cli.RunCheckedAsync(ExecutablePath, ["--list", "--online"], Utf8Output, OnlineListTimeout, ct);
+        return ParseAvailableDistros(output);
+    }
+
     public Task<string> UpdateAsync(bool preRelease) =>
         preRelease ? RunAsync(UpdateTimeout, "--update", "--pre-release") : RunAsync(UpdateTimeout, "--update");
 
     internal static List<WslDistro> ParseDistros(string output)
     {
-        var lines = output.Replace("\0", "", StringComparison.Ordinal).Split('\n').Select(line => line.TrimEnd('\r', ' ')).ToList();
+        List<string> lines = Lines(output);
         if (lines.Count == 0 || ColumnStarts(lines[0]) is not [var nameStart, var stateStart, var versionStart])
         {
             return [];
@@ -72,6 +85,37 @@ internal sealed class WslCli : IWslPlatform
 
         return distros;
     }
+
+    internal static List<AvailableDistro> ParseAvailableDistros(string output)
+    {
+        // wsl.exe translates the column headers, so the table is found as the block after the introduction.
+        List<string> lines = [.. Lines(output).SkipWhile(line => line.Length == 0)];
+        int introductionEnd = lines.IndexOf("");
+        string[] table = [.. lines.Skip(introductionEnd + 1).TakeWhile(line => line.Length > 0)];
+        if (table is not [var header, .. var rows] || ColumnStarts(header) is not [var nameStart, var friendlyStart, ..])
+        {
+            return [];
+        }
+
+        var distros = new List<AvailableDistro>();
+        foreach (string row in rows.Where(row => row.Length > nameStart))
+        {
+            string name = row[nameStart..Math.Min(friendlyStart, row.Length)].Trim();
+            string friendlyName = row.Length > friendlyStart ? row[friendlyStart..].Trim() : "";
+            if (name.Length > 0)
+            {
+                distros.Add(new AvailableDistro(name, friendlyName.Length > 0 ? friendlyName : name));
+            }
+        }
+
+        return distros;
+    }
+
+    /// <summary>
+    ///     wsl.exe may pad its output with NULs and ends lines with CRLF.
+    /// </summary>
+    private static List<string> Lines(string output) =>
+        [.. output.Replace("\0", "", StringComparison.Ordinal).Split('\n').Select(line => line.TrimEnd('\r', ' '))];
 
     /// <summary>
     ///     Names may contain spaces, so columns are read where the header's words start.

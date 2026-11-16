@@ -108,6 +108,7 @@ public sealed class AppSmokeTests(AppSession app)
     [InlineData("Images", new[] { "Pull", "Prune", "Refresh" })]
     [InlineData("Volumes", new[] { "Prune", "Refresh" })]
     [InlineData("Networks", new[] { "Remove unused", "Refresh" })]
+    [InlineData("WSL", new[] { "Add a distribution", "Refresh" })]
     public async Task Toolbar_ShowsEveryButton_AtTheMinimumWindowSize(string page, string[] buttons)
     {
         app.Navigate(page);
@@ -139,6 +140,51 @@ public sealed class AppSmokeTests(AppSession app)
             Assert.NotNull(await WaitForAsync(() => FindRadioStartingWith(option)));
         }
 
+        AssertNoCrash();
+    }
+
+    [Fact(Skip = SkipReason, SkipUnless = nameof(Enabled), SkipType = typeof(AppSession))]
+    public async Task Wsl_AddListsTheDistributionsWslOffers()
+    {
+        app.Navigate("WSL");
+        Invoke((await WaitForAsync(() => Find(app.Window, "Add a distribution", ControlType.Button)))!);
+
+        AutomationElement? dialog = await WaitForAsync(() => Find(app.Window, "Add a distribution", ControlType.Window));
+        Assert.NotNull(dialog);
+
+        // The list comes from the network, so it can take longer than the default wait.
+        AutomationElement? row = await WaitForAsync(
+            () => dialog.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem)),
+            TimeSpan.FromSeconds(30));
+
+        Assert.NotNull(row);
+        Assert.False(Find(dialog, "Install", ControlType.Button)!.Current.IsEnabled);
+
+        Invoke(Find(dialog, "Cancel", ControlType.Button)!);
+        Assert.True(await WaitForAsync(() => Find(app.Window, "Add a distribution", ControlType.Window) is null));
+        AssertNoCrash();
+    }
+
+    [Fact(Skip = SkipReason, SkipUnless = nameof(Enabled), SkipType = typeof(AppSession))]
+    public async Task Wsl_RemoveAsksBeforeDeletingADistribution()
+    {
+        app.Navigate("WSL");
+        AutomationElement? remove = await WaitForAsync(() => Find(app.Window, "Remove", ControlType.Button));
+        if (remove is null)
+        {
+            Assert.Skip("No WSL distribution is installed.");
+        }
+
+        Invoke(remove);
+        AutomationElement? dialog = await WaitForAsync(() => app.Window
+            .FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window))
+            .Cast<AutomationElement>()
+            .FirstOrDefault(window => window.Current.Name.StartsWith("Remove ", StringComparison.Ordinal)));
+
+        Assert.NotNull(dialog);
+
+        Invoke(Find(dialog, "Cancel", ControlType.Button)!);
+        Assert.NotNull(await WaitForAsync(() => Find(app.Window, "Remove", ControlType.Button)));
         AssertNoCrash();
     }
 

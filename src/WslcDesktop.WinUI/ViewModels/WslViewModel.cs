@@ -125,8 +125,32 @@ public sealed partial class WslViewModel : PageViewModel
         RunAndReloadAsync($"Setting {distro.Name} as default", () => Services.Wsl.SetDefaultAsync(distro.Name),
             $"{distro.Name} is now the default distribution.");
 
+    /// <summary>
+    ///     Unregisters the distribution, never alongside a WSL shutdown or update.
+    /// </summary>
+    public Task RemoveAsync(WslDistro distro) =>
+        RunAndReloadAsync($"Removing {distro.Name}", () => Services.Wsl.UnregisterAsync(distro.Name), $"{distro.Name} removed.", true);
+
     public void OpenDistroTerminal(WslDistro distro) =>
         Services.Shell.OpenDistroShell(distro.Name);
+
+    /// <summary>
+    ///     Lists what WSL offers to install, marking what is installed already.
+    /// </summary>
+    /// <param name="ct">Stops the download of the list.</param>
+    /// <exception cref="CliException">WSL could not get the list.</exception>
+    public async Task<AvailableDistroItem[]> ListAvailableAsync(CancellationToken ct)
+    {
+        Task<List<WslDistro>> current = Services.Wsl.ListDistrosAsync(ct);
+        Task<List<AvailableDistro>> offered = Services.Wsl.ListAvailableDistrosAsync(ct);
+        await Task.WhenAll(current, offered);
+
+        // The page's own list is refreshed only every few updates, and the fresh one is empty when wsl.exe fails.
+        var installed = _distros.Concat(current.Result).Select(distro => distro.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return [.. offered.Result.Select(distro => new AvailableDistroItem(distro.Name, distro.FriendlyName, installed.Contains(distro.Name)))];
+    }
+
+    public void Install(AvailableDistroItem distro) => Services.Shell.InstallDistro(distro.Name);
 
     [RelayCommand]
     private Task UpdateAsync() => RunOperationAsync(

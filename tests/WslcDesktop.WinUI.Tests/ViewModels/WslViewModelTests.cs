@@ -70,4 +70,98 @@ public sealed class WslViewModelTests
 
         Assert.Equal("[wsl2]\nmemory=8GB", viewModel.WslConfigText);
     }
+
+    [Fact]
+    public async Task RemoveAsync_UnregistersTheDistroAndReloadsTheList()
+    {
+        var ubuntu = new WslDistro("Ubuntu", "Stopped", "2", true);
+        _test.Wsl.Distros = [ubuntu];
+        var viewModel = new WslViewModel(_test.Services);
+        await viewModel.LoadAsync();
+        List<Notification> notifications = [];
+        _test.Notifier.Notified += notifications.Add;
+
+        _test.Wsl.Distros = [];
+        await viewModel.RemoveAsync(ubuntu);
+
+        Assert.Equal(["unregister Ubuntu"], _test.Wsl.Calls);
+        Assert.Equal("Ubuntu removed.", Assert.Single(notifications).Message);
+        Assert.Empty(viewModel.Distros);
+        Assert.True(viewModel.HasNoDistros);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_ReportsAFailureAndKeepsTheDistro()
+    {
+        var ubuntu = new WslDistro("Ubuntu", "Stopped", "2", true);
+        _test.Wsl.Distros = [ubuntu];
+        _test.Wsl.UnregisterFailure = new CliException("access denied");
+        var viewModel = new WslViewModel(_test.Services);
+        await viewModel.LoadAsync();
+        List<Notification> notifications = [];
+        _test.Notifier.Notified += notifications.Add;
+
+        await viewModel.RemoveAsync(ubuntu);
+
+        Assert.Equal("Removing Ubuntu failed", Assert.Single(notifications).Title);
+        Assert.Equal([ubuntu], viewModel.Distros);
+        Assert.False(viewModel.IsBusy);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_DoesNotStartWhileAnotherRuntimeOperationRuns()
+    {
+        var ubuntu = new WslDistro("Ubuntu", "Stopped", "2", true);
+        var viewModel = new WslViewModel(_test.Services);
+        var update = new TaskCompletionSource();
+        Task<bool> running = _test.Services.Actions.RunExclusiveAsync("Updating WSL", () => update.Task);
+        List<Notification> notifications = [];
+        _test.Notifier.Notified += notifications.Add;
+
+        await viewModel.RemoveAsync(ubuntu);
+
+        Assert.Empty(_test.Wsl.Calls);
+        Assert.Equal("Removing Ubuntu did not start", Assert.Single(notifications).Title);
+
+        update.SetResult();
+        await running;
+    }
+
+    [Fact]
+    public async Task ListAvailableAsync_MarksTheDistrosAlreadyInstalled()
+    {
+        _test.Wsl.Distros = [new WslDistro("ubuntu", "Stopped", "2", true)];
+        _test.Wsl.Available = [new AvailableDistro("Ubuntu", "Ubuntu"), new AvailableDistro("Debian", "Debian GNU/Linux")];
+        var viewModel = new WslViewModel(_test.Services);
+
+        AvailableDistroItem[] available = await viewModel.ListAvailableAsync(CancellationToken.None);
+
+        Assert.Equal(
+            [new AvailableDistroItem("Ubuntu", "Ubuntu", true), new AvailableDistroItem("Debian", "Debian GNU/Linux", false)],
+            available);
+    }
+
+    [Fact]
+    public async Task ListAvailableAsync_KeepsTheDistrosThePageShowsWhenWslCannotListThemAgain()
+    {
+        _test.Wsl.Distros = [new WslDistro("Debian", "Stopped", "2", true)];
+        _test.Wsl.Available = [new AvailableDistro("Debian", "Debian GNU/Linux")];
+        var viewModel = new WslViewModel(_test.Services);
+        await viewModel.LoadAsync();
+
+        // A failed wsl --list reads as no distributions.
+        _test.Wsl.Distros = [];
+
+        Assert.True(Assert.Single(await viewModel.ListAvailableAsync(CancellationToken.None)).IsInstalled);
+    }
+
+    [Fact]
+    public void Install_OpensATerminalThatInstallsTheDistro()
+    {
+        var viewModel = new WslViewModel(_test.Services);
+
+        viewModel.Install(new AvailableDistroItem("Debian", "Debian GNU/Linux", false));
+
+        Assert.Equal(["install-distro Debian"], _test.Shell.Opened);
+    }
 }

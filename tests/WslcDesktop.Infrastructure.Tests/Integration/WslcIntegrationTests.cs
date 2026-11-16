@@ -119,4 +119,13 @@ public sealed class WslcIntegrationTests
         Assert.Contains(versions, entry => entry.Key.StartsWith("WSL", StringComparison.Ordinal));
         _ = await _wsl.ListDistrosAsync(TestContext.Current.CancellationToken);
     }
+
+    [Fact(Skip = SkipReason, SkipUnless = nameof(Enabled))]
+    public async Task Wsl_ListsTheDistributionsItCanInstall()
+    {
+        List<AvailableDistro> available = await _wsl.ListAvailableDistrosAsync(TestContext.Current.CancellationToken);
+
+        Assert.Contains(available, distro => distro.Name.StartsWith("Ubuntu", StringComparison.Ordinal));
+        Assert.All(available, distro => Assert.True(DistroName.IsValid(distro.Name), distro.Name));
+    }
 }

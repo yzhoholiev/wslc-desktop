@@ -34,6 +34,13 @@ public static class Dialogs
         "This immediately stops every WSL distribution, the container runtime, and all running containers.",
         "Shut down");
 
+    public static Task<bool> ConfirmRemoveDistroAsync(XamlRoot xamlRoot, string distro) => ConfirmAsync(
+        xamlRoot,
+        $"Remove {distro}?",
+        "This deletes the distribution and all files in it. It cannot be undone. "
+        + "If it came from the Microsoft Store, its app stays installed and sets the distribution up again when opened.",
+        "Remove");
+
     internal static ContentDialog Create(XamlRoot xamlRoot, string title, object content, string primaryButtonText) => new()
     {
         XamlRoot = xamlRoot,
