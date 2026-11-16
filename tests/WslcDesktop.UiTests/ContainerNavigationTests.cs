@@ -57,7 +57,9 @@ public sealed class ContainerNavigationTests(AppSession app) : IAsyncLifetime
         Assert.True(await dialog.WaitClosedAsync(), "The dialog stayed open.");
 
         AutomationElement? row =
-            await WaitForAsync(() => Find(ContainerList(), name) is { Current.IsOffscreen: false } element ? element : null, TimeSpan.FromSeconds(30));
+            await WaitForAsync(
+                () => FindContainerList() is { } list && Find(list, name) is { Current.IsOffscreen: false } element ? element : null,
+                TimeSpan.FromSeconds(30));
 
         Assert.True(row is not null, DescribeRows(name));
         Assert.False(app.CrashLogChanged(), app.CrashLogTail());
@@ -66,9 +68,13 @@ public sealed class ContainerNavigationTests(AppSession app) : IAsyncLifetime
     /// <summary>
     ///     The containers list itself; the details pane repeats the selected container's name.
     /// </summary>
-    private AutomationElement ContainerList() =>
-        app.Window.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "ContainerList"))
-        ?? throw new InvalidOperationException("The containers list is not shown.");
+    private AutomationElement ContainerList() => FindContainerList() ?? throw new InvalidOperationException("The containers list is not shown.");
+
+    /// <summary>
+    ///     The containers list, or null while the app is still on its way to the containers page.
+    /// </summary>
+    private AutomationElement? FindContainerList() =>
+        app.Window.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "ContainerList"));
 
     /// <summary>
     ///     Which container rows the list has realized and whether they are on screen, for a failure message.
