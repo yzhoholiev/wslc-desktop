@@ -4,6 +4,8 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-16
+
 ### Added
 
 - The Volumes page shows each volume's size and their total, and sorts by size. Pointing at a size shows it in bytes.
@@ -65,7 +67,8 @@ What changed for people who use WSLC Desktop, newest first. The format follows [
 
 The first release: dashboard, containers, images, volumes, networks, the WSL containers and WSL pages, the tray icon and the jump list.
 
-[Unreleased]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/yzhoholiev/wslc-desktop/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/yzhoholiev/wslc-desktop/releases/tag/v1.0.0
