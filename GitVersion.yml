@@ -7,3 +7,8 @@ label: null
 branches:
   main:
     label: null
+  # A tag build checks out a detached commit, which matches no branch unless the tag is on a branch tip
+  unknown:
+    label: null
+    prevent-increment:
+      when-current-commit-tagged: true
